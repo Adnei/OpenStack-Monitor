@@ -13,6 +13,8 @@ class InstanceLifeCycle:
     def __init__(self, authInfo=None, instanceInfo=None, stateList=['create', 'suspend','resume','stop','shelve']):
         def authenticate(authInfo):
             if authInfo is None:
+                #this requires the [machine] user to be stated as an OpenStack admin (admin-openrc.sh file)
+                #see docs.openstack.org/liberty/install-guide-ubuntu/keystone-openrc.html
                 authInfo = {
                     'auth_url': env['OS_AUTH_URL'],
                     'username': env['OS_USERNAME'],
