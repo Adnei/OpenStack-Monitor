@@ -1,1 +1,1 @@
-__all__ = ['network_meter']
+__all__ = ['network_meter', 'induced_life_cycle']

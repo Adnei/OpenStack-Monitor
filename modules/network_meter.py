@@ -1,7 +1,7 @@
 import subprocess as sub
 
 class NetworkMeter:
-    def __init__(self, ifaceList=['lo'], outputFileList='lo.pcap'):
+    def __init__(self, ifaceList=['lo'], outputFileList=['lo.pcap']):
         if len(ifaceList) != len(outputFileList):
             ifaceList = ['lo']
             outputFileList = ['lo.pcap']
@@ -21,6 +21,7 @@ class NetworkMeter:
             capture['process'] = sub.Popen('exec tcpdump -i '+capture['iface']+' -nn -s 0 -w ' + capture['file'],
                 shell=True,
                 stdout=sub.DEVNULL)
+
 
     def stopPacketCapture(self):
         for capture in self.captureList:
