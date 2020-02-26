@@ -15,7 +15,9 @@ def main(argv):
     print(fileList)
     #do scenario
     #default state list ['create','suspend','resume','stop','shelve']
-    InstanceLifeCycle = InstanceLifeCycle()
+    instanceLifeCycle = InstanceLifeCycle()
+    instanceLifeCycle.startInducedLifeCycle()
+    time.sleep(10) #for the sake of testing :)
     networkMeter.stopPacketCapture()
 
 if __name__ == "__main__":
