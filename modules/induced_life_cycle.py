@@ -1,9 +1,12 @@
+import time
+import logging
 from openstack_utils import *
 from network_meter import *
-import time
+
 
 class InstanceLifeCycleMetering:
     def __init__(self, ifaceList=['lo']):
+        logging.basicConfig(filename='debug.log', level=logging.DEBUG)
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instance = None
