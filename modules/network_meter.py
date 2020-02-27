@@ -1,5 +1,7 @@
 import subprocess as sub
 
+#@TODO: proper indent too long lines
+
 class NetworkMeter:
     def __init__(self, ifaceList=['lo'], outputFileList=['lo.pcap']):
         if len(ifaceList) != len(outputFileList):

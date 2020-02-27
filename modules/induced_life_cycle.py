@@ -1,8 +1,10 @@
 import time
 import logging
-from openstack_utils import *
-from network_meter import *
+from modules.openstack_utils import *
+from modules.network_meter import *
 
+
+#@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
     def __init__(self, ifaceList=['lo']):
@@ -22,7 +24,7 @@ class InstanceLifeCycleMetering:
         if self.instanceImage == None or self.nics == None:
             return None
 
-        fileList = ['create_'+iface+'.pcap' for iface in argv] #['create_enp3s0.pcap','create_lo.pcap']
+        fileList = ['create_'+iface+'.pcap' for iface in self.ifaceList] #['create_enp3s0.pcap','create_lo.pcap']
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
         networkMeter.startPacketCapture()
 

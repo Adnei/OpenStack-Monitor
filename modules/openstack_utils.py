@@ -8,18 +8,20 @@ from glanceclient import Client as glanceClient
 from neutronclient.v2_0 import client as neutronClient
 from troveclient.v1 import client as troveClient
 
+#@TODO: proper indent too long lines
+
 class OpenStackUtils:
     def __init__(self, authInfo=None, session=None):
             self.authInfo = authInfo
             self.session = session
             if self.session is None:
-                self.session = authenticate(self.authInfo)
+                self.session = self.authenticate(self.authInfo)
             self.glance = glanceClient('2',session=self.session)
-            self.trove = troveClient(session=self.session)
+            self.trove = troveClient.Client(session=self.session)
             self.nova = novaClient.Client('2.1', session=self.session)
             self.neutron = neutronClient.Client(session=self.session)
 
-    def authenticate(authInfo):
+    def authenticate(self, authInfo=None):
         if authInfo is None:
             #this requires the [machine] user to be stated as an OpenStack admin (admin-openrc.sh file)
             #see docs.openstack.org/liberty/install-guide-ubuntu/keystone-openrc.html
@@ -33,8 +35,8 @@ class OpenStackUtils:
             }
         return keystoneSession.Session(auth=v3.Password(**authInfo))
 
-    def createImage(self, data={'flavor':'m1.small', 'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2', 'imageName':'fedora31'}):
-        image = self.glance.images.create(name=data['imageName'])
+    def createImage(self, data={'flavor':'m1.small', 'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2', 'imageName':'fedora31', 'imageFormat':'bare', 'imageContainer':'qcow2'}):
+        image = self.glance.images.create(name=data['imageName'], container_format=data['imageContainer'], disk_format=data['imageFormat'])
         self.glance.images.upload(image.id, open(data['imagePath'],'rb'))
         return image
 
