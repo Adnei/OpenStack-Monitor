@@ -1,37 +1,34 @@
+from openstack_utils import *
+from network_meter import *
 import time
-import logging
-from os import environ as env
-from novaclient import client as novaclient
 
-from keystoneauth1.identity import v3
-from keystoneauth1 import session
-from glanceclient import Client as glanceclient
-from neutronclient.v2_0 import client as neutronclient
+class InstanceLifeCycleMetering:
+    def __init__(self, ifaceList=['lo']):
+        self.ifaceList = ifaceList
+        self.openStackUtils = OpenStackUtils() #use default authInfo
+        self.instance = None
+        self.instanceImage = None
+        self.nics = None
 
+    def prepareLifeCycleScenario(self):
+        #create image and network
+        self.instanceImage = self.openStackUtils.createImage()
+        self.nics = self.openStackUtils.networkSetup()
 
-class InstanceLifeCycle:
-    def __init__(self, authInfo=None, instanceInfo=None, stateList=['create', 'suspend','resume','stop','shelve']):
-        def authenticate(authInfo):
-            if authInfo is None:
-                #this requires the [machine] user to be stated as an OpenStack admin (admin-openrc.sh file)
-                #see docs.openstack.org/liberty/install-guide-ubuntu/keystone-openrc.html
-                authInfo = {
-                    'auth_url': env['OS_AUTH_URL'],
-                    'username': env['OS_USERNAME'],
-                    'password': env['OS_PASSWORD'],
-                    'project_name': env['OS_PROJECT_NAME'],
-                    'user_domain_name': env['OS_USER_DOMAIN_NAME'],
-                    'project_domain_name': env['OS_PROJECT_DOMAIN_NAME']
-                }
-            return session.Session(auth=v3.Password(**authInfo))
+    def startInducedLifeCycle(self, stateList=['create','suspend','resume','stop','shelve']):
+        if self.instanceImage == None or self.nics == None:
+            return None
 
-        self.stateList = stateList
-        self.authInfo = authInfo
-        self.instanceInfo = instanceInfo
-        self.authSession = authenticate(self.authInfo)
+        fileList = ['create_'+iface+'.pcap' for iface in argv] #['create_enp3s0.pcap','create_lo.pcap']
+        networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
+        networkMeter.startPacketCapture()
 
+        instance = self.openStackUtils.createInstance('instance', self.instanceImage, 'm1.small', self.nics)
 
-    def startInducedLifeCycle(self):
-        if self.authSession is None:
-            print("authSession == None")
-        print(self.authSession)
+        while instance.status == 'BUILD':
+            instance.get()
+            time.sleep(1)
+        if instance.status != 'ACTIVE':
+            print("ERROR!!!!!!")
+            print(instance.status)
+        networkMeter.stopPacketCapture()
