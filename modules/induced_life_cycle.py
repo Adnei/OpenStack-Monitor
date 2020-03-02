@@ -71,3 +71,6 @@ class InstanceLifeCycleMetering:
         if not caching:
             self.openStackUtils.deleteImage(self.instanceName)
             self.instanceName = None
+
+        actionsList = self.openStackUtils.novaInstanceActions.list(instance)
+        [print(action) for action in actionsList]

@@ -2,6 +2,7 @@ import time
 import logging
 from os import environ as env
 from novaclient import client as novaClient
+from novaclient.v2 import instance_actions as NovaInstanceActions
 from keystoneauth1.identity import v3
 from keystoneauth1 import session as keystoneSession
 from glanceclient import Client as glanceClient
@@ -19,7 +20,7 @@ class OpenStackUtils:
             self.glance = glanceClient('2',session=self.session)
             self.trove = troveClient.Client(session=self.session)
             self.nova = novaClient.Client('2.1', session=self.session)
-            self.novaInstanceActions = novaClient.InstanceAction(session=self.session)
+            self.novaInstanceActions = NovaInstanceActions
             self.neutron = neutronClient.Client(session=self.session)
 
     def authenticate(self, authInfo=None):
