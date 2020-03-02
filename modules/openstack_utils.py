@@ -35,8 +35,7 @@ class OpenStackUtils:
             }
         return keystoneSession.Session(auth=v3.Password(**authInfo))
 
-    def createImage(self, data={'flavor':'m1.small',
-        'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+    def createImage(self, data={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
         'imageName':'fedora31', 'imageFormat':'qcow2',
         'imageContainer':'bare'}):
         image = self.glance.images.create(name=data['imageName'],

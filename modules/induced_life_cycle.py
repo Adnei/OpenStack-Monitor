@@ -7,8 +7,7 @@ from modules.network_meter import *
 #@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
-    def __init__(self, ifaceList=['lo'], imageInfo={'flavor':'m1.small',
-                    'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+    def __init__(self, ifaceList=['lo'], imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
                     'imageName':'fedora31',
                     'imageFormat':'qcow2',
                     'imageContainer':'bare'}                         ):
@@ -20,36 +19,43 @@ class InstanceLifeCycleMetering:
     def prepareLifeCycleScenario(self, imageInfo):
         #create image and network
         cachedImage = self.openStackUtils.getImageByName('fedora31')
+        if cachedImage is None:
+            print('Image is not being cached!') #Should Log
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
         self.nics = self.openStackUtils.networkSetup()
 
         return (self.instanceImage, self.nics)
 
-    def startInducedLifeCycle(self, stateList=['create','suspend','resume',
-                                          'stop','shelve'], caching=False):
-        if self.instanceImage == None or self.nics == None:
+    def startInducedLifeCycle(self, operationObjectList, caching=False):
+        def elapsedTime(referenceTime, current=time.time()):
+            return
+        return round(current - referenceTime)
+
+        if self.instanceImage is None or self.nics is None:
             print("no image or nics") #SHOULD LOG
+            return None
+        if operationObjectList is None:
+            print("Please, provide operationObjectList")
             return None
 
         #['create_enp3s0.pcap','create_lo.pcap']
         # @TODO Parameterize file names
-        fileList = ['create_'+iface+'.pcap' for iface in self.ifaceList]
+        fileList = [iface+'.pcap' for iface in self.ifaceList]
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
         startTime = networkMeter.startPacketCapture()
+        instance = None
 
-        instance = self.openStackUtils.createInstance('instance',
-                        self.instanceImage, 'm1.small', self.nics)
-
-        while instance.status == 'BUILD':
-            instance.get()
-            time.sleep(1)
-        if instance.status != 'ACTIVE':
-            print("ERROR!!!!!!")
-            print(instance.status)
-        stopTime = networkMeter.stopPacketCapture()
-        if(not caching):
-            #try catch
-            self.openStackUtils.deleteImage(self.instanceImage)
-            self.instanceImage = None
-        print("started at -> ", startTime)
-        print("stopped at -> ", stopTime)
+        for operationObject in operationObjectList:
+            print('operaton: ', operationObject['operaton'])
+            if operationObject['operation'].upper() == 'CREATE':
+                instance = self.openStackUtils.createInstance('instance',
+                                self.instanceImage, operationObject['params']['flavor'], self.nics)
+                operationObject['startedAt'] = startTime
+            else:
+                print('called anonymousFunction!')
+                operationObject['anonymousFunction'](instance)
+            while instance.status != operationObject['targetState'] or instance.status != 'ERROR':
+                instance.get()
+                time.sleep(1)
+            operationObject['finishedAt'] = time.time()
+        finishTime = networkMeter.stopPacketCapture()
