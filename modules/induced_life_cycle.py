@@ -44,6 +44,11 @@ class InstanceLifeCycleMetering:
         startTime = networkMeter.startPacketCapture()
         instance = None
 
+        #instance._info['OS-EXT-STS:vm_state']
+        #instance.updated
+        # TODO: Integrate vm_state_report
+        # Separete by .pcap // keep it all in one .pcap
+
         for operationObject in operationObjectList:
             print('operation: ', operationObject['operation'])
             if operationObject['operation'].upper() == 'CREATE':
@@ -69,8 +74,5 @@ class InstanceLifeCycleMetering:
 
         instance.delete()
         if not caching:
-            self.openStackUtils.deleteImage(self.instanceName)
+            self.openStackUtils.deleteImage(self.instanceImage)
             self.instanceName = None
-
-        actionsList = self.openStackUtils.novaInstanceAction.list(instance)
-        [print(action) for action in actionsList]
