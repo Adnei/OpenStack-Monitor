@@ -72,5 +72,5 @@ class InstanceLifeCycleMetering:
             self.openStackUtils.deleteImage(self.instanceName)
             self.instanceName = None
 
-        actionsList = self.openStackUtils.novaInstanceActions.list(instance)
+        actionsList = self.openStackUtils.novaInstanceAction.list(instance)
         [print(action) for action in actionsList]
