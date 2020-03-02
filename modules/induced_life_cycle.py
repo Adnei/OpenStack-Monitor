@@ -28,8 +28,7 @@ class InstanceLifeCycleMetering:
 
     def startInducedLifeCycle(self, operationObjectList, caching=False):
         def elapsedTime(referenceTime, current=time.time()):
-            return
-        return round(current - referenceTime)
+            return round(current - referenceTime)
 
         if self.instanceImage is None or self.nics is None:
             print("no image or nics") #SHOULD LOG
@@ -46,16 +45,29 @@ class InstanceLifeCycleMetering:
         instance = None
 
         for operationObject in operationObjectList:
-            print('operaton: ', operationObject['operaton'])
+            print('operation: ', operationObject['operation'])
             if operationObject['operation'].upper() == 'CREATE':
                 instance = self.openStackUtils.createInstance('instance',
                                 self.instanceImage, operationObject['params']['flavor'], self.nics)
                 operationObject['startedAt'] = startTime
             else:
-                print('called anonymousFunction!')
-                operationObject['anonymousFunction'](instance)
-            while instance.status != operationObject['targetState'] or instance.status != 'ERROR':
+                if instance.status.upper() in operationObject['requiredStatus']:
+                    print('called anonymousFunction!')
+                    operationObject['started'] = time.time()
+                    operationObject['anonymousFunction'](instance)
+                else:
+                    return #SHOULD LOG
+            while instance.status != operationObject['targetStatus']:
+                if instance.status.upper() == 'ERROR':
+                    print('ERROR') #SHOULD LOG
+                    return
                 instance.get()
                 time.sleep(1)
             operationObject['finishedAt'] = time.time()
+            operationObject['elapsedSecs'] = elapsedTime(operationObject['finishedAt'])
         finishTime = networkMeter.stopPacketCapture()
+
+        instance.delete()
+        if not caching:
+            self.openStackUtils.deleteImage(self.instanceName)
+            self.instanceName = None

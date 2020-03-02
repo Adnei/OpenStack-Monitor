@@ -19,6 +19,7 @@ class OpenStackUtils:
             self.glance = glanceClient('2',session=self.session)
             self.trove = troveClient.Client(session=self.session)
             self.nova = novaClient.Client('2.1', session=self.session)
+            self.novaInstanceActions = novaClient.InstanceAction(session=self.session)
             self.neutron = neutronClient.Client(session=self.session)
 
     def authenticate(self, authInfo=None):
@@ -95,6 +96,3 @@ class OpenStackUtils:
             }
             self.neutron.create_subnet(subnetRequest)
         return nics
-
-    # def troveGetInstance(self, instanceId):
-    #     return self.trove.instances.get(instanceId)
