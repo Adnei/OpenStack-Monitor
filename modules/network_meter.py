@@ -1,4 +1,5 @@
 import subprocess as sub
+import time
 
 #@TODO: proper indent too long lines
 
@@ -23,10 +24,11 @@ class NetworkMeter:
             capture['process'] = sub.Popen('exec tcpdump -i '+capture['iface']+' -nn -s 0 -w ' + capture['file'],
                 shell=True,
                 stdout=sub.DEVNULL)
-
+        return time.time()
 
     def stopPacketCapture(self):
         for capture in self.captureList:
             if capture['process'] is not None:
                 capture['process'].terminate()
                 capture['process'].wait()
+        return time.time()

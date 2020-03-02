@@ -35,8 +35,13 @@ class OpenStackUtils:
             }
         return keystoneSession.Session(auth=v3.Password(**authInfo))
 
-    def createImage(self, data={'flavor':'m1.small', 'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2', 'imageName':'fedora31', 'imageFormat':'bare', 'imageContainer':'qcow2'}):
-        image = self.glance.images.create(name=data['imageName'], container_format=data['imageContainer'], disk_format=data['imageFormat'])
+    def createImage(self, data={'flavor':'m1.small',
+        'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+        'imageName':'fedora31', 'imageFormat':'qcow2',
+        'imageContainer':'bare'}):
+        image = self.glance.images.create(name=data['imageName'],
+            container_format=data['imageContainer'],
+            disk_format=data['imageFormat'])
         self.glance.images.upload(image.id, open(data['imagePath'],'rb'))
         return image
 
@@ -51,29 +56,38 @@ class OpenStackUtils:
 
         return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=nics)
 
+    def getInstanceByName(self, name):
+        return self.glance.images.get(name=name)
+
     def networkSetup(self):
-        # https://developer.openstack.org/api-ref/network/v2/#create-network
-        network_request = {
-            'network': {
-                'name': 'local',
-                'admin_state_up': True
-            }
-        }
+        localNetworks = self.neutron.list_networks(name='local')
 
-        response = self.neutron.create_network(network_request)
-        network_id = response['network']['id']
-        nics = [{'net-id': network_id}]
-
-        # https://developer.openstack.org/api-ref/network/v2/#create-subnet
-        subnet_request = {
-            "subnet": {
-                "name": "Subnet1",
-                "network_id": network_id,
-                "ip_version": 4,
-                "cidr": "192.168.0.0/24"
+        if len(localNetworks['networks'] > 0):
+            networkId = localNetworks['networks'][0]['id']
+            nics = [{'net-id' : networkId}]
+        else:
+            # https://developer.openstack.org/api-ref/network/v2/#create-network
+            networkRequest = {
+                'network': {
+                    'name': 'local',
+                    'admin_state_up': True
+                }
             }
-        }
-        self.neutron.create_subnet(subnet_request)
+
+            response = self.neutron.create_network(networkRequest)
+            networkId = response['network']['id']
+            nics = [{'net-id': networkId}]
+
+            # https://developer.openstack.org/api-ref/network/v2/#create-subnet
+            subnetRequest = {
+                "subnet": {
+                    "name": "Subnet1",
+                    "network_id": networkId,
+                    "ip_version": 4,
+                    "cidr": "192.168.0.0/24"
+                }
+            }
+            self.neutron.create_subnet(subnetRequest)
         return nics
 
     # def troveGetInstance(self, instanceId):

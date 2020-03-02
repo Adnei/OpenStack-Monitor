@@ -10,9 +10,9 @@ def main(argv):
 
     # @TODO
     #   FIX argv PARAMETERS
+    #   Parameterize NICs, file names and number of execution
 
     instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
-    instanceLifeCycleMetering.prepareLifeCycleScenario()
     instanceLifeCycleMetering.startInducedLifeCycle()
 
 if __name__ == "__main__":
