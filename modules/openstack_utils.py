@@ -56,13 +56,20 @@ class OpenStackUtils:
 
         return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=nics)
 
-    def getInstanceByName(self, name):
-        return self.glance.images.get(name=name)
+    # Workaround, since documentation doesn't provide enough information about a get operation by image name
+    # @TODO: Refactor ASAP
+    # Serious performance issue
+    def getImageByName(self, name):
+        imageList = self.glance.images.list()
+        filteredImageList = list(filter(lambda image: image.name == name, imageList))
+        if len(filteredImageList) == 0 :
+            return None
+        return filteredImageList[0]
 
     def networkSetup(self):
         localNetworks = self.neutron.list_networks(name='local')
 
-        if len(localNetworks['networks'] > 0):
+        if len(localNetworks['networks']) > 0:
             networkId = localNetworks['networks'][0]['id']
             nics = [{'net-id' : networkId}]
         else:

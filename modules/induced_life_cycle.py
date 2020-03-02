@@ -19,17 +19,16 @@ class InstanceLifeCycleMetering:
 
     def prepareLifeCycleScenario(self, imageInfo):
         #create image and network
-        self.instanceImage = self.openStackUtils.createImage(imageInfo)
+        cachedImage = self.openStackUtils.getImageByName('fedora31')
+        self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
         self.nics = self.openStackUtils.networkSetup()
-
-        gotInstance = self.openStackUtils.getInstanceByName('fedora31')
-        print("got instance ->", gotInstance)
 
         return (self.instanceImage, self.nics)
 
     def startInducedLifeCycle(self, stateList=['create','suspend','resume',
                                           'stop','shelve'], caching=False):
         if self.instanceImage == None or self.nics == None:
+            print("no image or nics") #SHOULD LOG
             return None
 
         #['create_enp3s0.pcap','create_lo.pcap']
@@ -50,7 +49,7 @@ class InstanceLifeCycleMetering:
         stopTime = networkMeter.stopPacketCapture()
         if(not caching):
             #try catch
-            self.openStackUtils.deleteImage(self.glanceImage)
-            self.glanceImage = None
+            self.openStackUtils.deleteImage(self.instanceImage)
+            self.instanceImage = None
         print("started at -> ", startTime)
         print("stopped at -> ", stopTime)
