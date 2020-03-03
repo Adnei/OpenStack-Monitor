@@ -18,9 +18,9 @@ def main(argv):
             'targetStatus':'ACTIVE',
             'requiredStatus':['BUILD'], #Note: OpenStack should refactor this state to INITIALIZE
             'params':{'flavor':'m1.small'},
-            'startedAt': None,
-            'finishedAt': None,
-            'elapsedSecs': None
+            'startedAt': None, # Will be removed
+            'finishedAt': None, # Will be removed
+            'elapsedSecs': None # Will be removed
         },
         {
             'operation':'SUSPEND',

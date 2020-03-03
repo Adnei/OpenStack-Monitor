@@ -1,5 +1,6 @@
 import time
 import logging
+import itertools
 from modules.openstack_utils import *
 from modules.network_meter import *
 
@@ -7,6 +8,7 @@ from modules.network_meter import *
 #@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
+    autoId = itertools.count()
     def __init__(self, ifaceList=['lo'], imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
                     'imageName':'fedora31',
                     'imageFormat':'qcow2',
@@ -15,6 +17,7 @@ class InstanceLifeCycleMetering:
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
+        self.id = next(self.autoId)
 
     def prepareLifeCycleScenario(self, imageInfo):
         #create image and network
@@ -43,6 +46,7 @@ class InstanceLifeCycleMetering:
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
         startTime = networkMeter.startPacketCapture()
         instance = None
+        time.sleep(1) #tcpdump sync
 
         #instance._info['OS-EXT-STS:vm_state']
         #instance.updated
@@ -72,7 +76,7 @@ class InstanceLifeCycleMetering:
             operationObject['elapsedSecs'] = elapsedTime(operationObject['finishedAt'])
         finishTime = networkMeter.stopPacketCapture()
 
-        instance.delete()
+        instance.force_delete()
         if not caching:
             self.openStackUtils.deleteImage(self.instanceImage)
             self.instanceName = None

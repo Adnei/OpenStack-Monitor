@@ -1,3 +1,4 @@
+sqlalchemy
 keystoneauth1
 python-keystoneclient
 python-glanceclient
