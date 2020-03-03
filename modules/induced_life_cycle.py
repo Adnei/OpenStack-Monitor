@@ -3,8 +3,8 @@ import logging
 import itertools
 from modules.openstack_utils import *
 from modules.network_meter import *
-
-
+from modules.objects import db_info
+from modules.objects.execution import *
 #@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
@@ -39,6 +39,10 @@ class InstanceLifeCycleMetering:
         if operationObjectList is None:
             print("Please, provide operationObjectList")
             return None
+
+
+        execution = Execution(self.id)
+        print(execution)
 
         #['create_enp3s0.pcap','create_lo.pcap']
         # @TODO Parameterize file names
