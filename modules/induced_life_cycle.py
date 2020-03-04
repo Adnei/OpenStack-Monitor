@@ -5,19 +5,25 @@ from modules.openstack_utils import *
 from modules.network_meter import *
 from modules.objects import db_info
 from modules.objects.execution import *
+from modules.objects.operation import *
+from modules.objects import db_info as DB_INFO
 #@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
     autoId = itertools.count()
-    def __init__(self, ifaceList=['lo'], imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+    def __init__(self, ifaceList=['lo'], execId=None, imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
                     'imageName':'fedora31',
                     'imageFormat':'qcow2',
                     'imageContainer':'bare'}                         ):
         logging.basicConfig(filename='debug.log', level=logging.DEBUG)
+        if execId is None:
+            self.id = next(self.autoId)
+        else:
+            self.id = execId
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
-        self.id = next(self.autoId)
+
 
     def prepareLifeCycleScenario(self, imageInfo):
         #create image and network
@@ -42,43 +48,43 @@ class InstanceLifeCycleMetering:
 
 
         execution = Execution(self.id)
-        print(execution)
+        print(execution.id) #DEBUUG
+        initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
+        openSession = initSession()
 
-        #['create_enp3s0.pcap','create_lo.pcap']
-        # @TODO Parameterize file names
+        openSession.add_all([execution])
+
         fileList = [iface+'.pcap' for iface in self.ifaceList]
-        networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
-        startTime = networkMeter.startPacketCapture()
         instance = None
-        time.sleep(1) #tcpdump sync
-
+        networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
+        elapsedTime = 0
         #instance._info['OS-EXT-STS:vm_state']
         #instance.updated
-        # TODO: Integrate vm_state_report
-        # Separete by .pcap // keep it all in one .pcap
 
         for operationObject in operationObjectList:
             print('operation: ', operationObject['operation'])
+            startTime = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.id) + '_')
+            time.sleep(1) #tcpdump sync
             if operationObject['operation'].upper() == 'CREATE':
                 instance = self.openStackUtils.createInstance('instance',
                                 self.instanceImage, operationObject['params']['flavor'], self.nics)
-                operationObject['startedAt'] = startTime
+                # operationObject['startedAt'] = startTime
             else:
                 if instance.status.upper() in operationObject['requiredStatus']:
                     print('called anonymousFunction!')
-                    operationObject['started'] = time.time()
                     operationObject['anonymousFunction'](instance)
                 else:
-                    return #SHOULD LOG
+                    print('instance\'s current status is not a required status for ', operationObject['targetStatus'])#SHOULD LOG
+                    print('You cannot make an instance move from ', instance.status.upper(), ' to ', operationObject['targetStatus'])#SHOULD LOG
+                    return
             while instance.status != operationObject['targetStatus']:
                 if instance.status.upper() == 'ERROR':
                     print('ERROR') #SHOULD LOG
                     return
                 instance.get()
                 time.sleep(1)
-            operationObject['finishedAt'] = time.time()
-            operationObject['elapsedSecs'] = elapsedTime(operationObject['finishedAt'])
-        finishTime = networkMeter.stopPacketCapture()
+            finishTime = networkMeter.stopPacketCapture()
+            # time.sleep(1) #should sync (?)
 
         instance.force_delete()
         if not caching:

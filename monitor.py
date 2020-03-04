@@ -16,47 +16,32 @@ def main(argv):
         {
             'operation':'CREATE',
             'targetStatus':'ACTIVE',
-            'requiredStatus':['BUILD'], #Note: OpenStack should refactor this state to INITIALIZE
-            'params':{'flavor':'m1.small'},
-            'startedAt': None, # Will be removed
-            'finishedAt': None, # Will be removed
-            'elapsedSecs': None # Will be removed
+            'requiredStatus':['BUILD'], #Note: OpenStack should refactor this status to INITIALIZE
+            'params':{'flavor':'m1.small'}
         },
         {
             'operation':'SUSPEND',
             'targetStatus':'SUSPENDED',
             'requiredStatus':['ACTIVE','SHUTOFF'],
-            'anonymousFunction':lambda instance: instance.suspend(),
-            'startedAt': None,
-            'finishedAt': None,
-            'elapsedSecs': None
+            'anonymousFunction':lambda instance: instance.suspend()
         },
         {
             'operation':'RESUME',
             'targetStatus':'ACTIVE',
             'requiredStatus':['SUSPENDED'],
-            'anonymousFunction':lambda instance: instance.resume(),
-            'startedAt': None,
-            'finishedAt': None,
-            'elapsedSecs': None
+            'anonymousFunction':lambda instance: instance.resume()
         },
         {
             'operation':'STOP',
             'targetStatus':'SHUTOFF', #STOPPED
             'requiredStatus':['ACTIVE','SHUTOFF', 'RESCUED'],
-            'anonymousFunction':lambda instance: instance.stop(),
-            'startedAt': None,
-            'finishedAt': None,
-            'elapsedSecs': None
+            'anonymousFunction':lambda instance: instance.stop()
         },
         {
             'operation':'SHELVE',
             'targetStatus':'SHELVED_OFFLOADED',
             'requiredStatus':['ACTIVE', 'SHUTOFF', 'SUSPENDED'],
-            'anonymousFunction':lambda instance: instance.shelve(),
-            'startedAt': None,
-            'finishedAt': None,
-            'elapsedSecs': None
+            'anonymousFunction':lambda instance: instance.shelve()
         }
     ]
 
