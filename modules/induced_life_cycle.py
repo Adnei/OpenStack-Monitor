@@ -69,12 +69,12 @@ class InstanceLifeCycleMetering:
             operation = Operation()
             operation.execId = self.execId
             operation.type = operationObject['operation'].upper()
-            operation.meteringStart = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.execId) + '_')
+            startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.execId) + '_')
+            operation.meteringStart = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
             if operationObject['operation'].upper() == 'CREATE':
                 instance = self.openStackUtils.createInstance('instance',
                                 self.instanceImage, operationObject['params']['flavor'], self.nics)
-                # operationObject['startedAt'] = startTime
             else:
                 if instance.status.upper() in operationObject['requiredStatus']:
                     print('called anonymousFunction!')
@@ -83,6 +83,7 @@ class InstanceLifeCycleMetering:
                     print('instance\'s current status is not a required status for ', operationObject['targetStatus'])#SHOULD LOG
                     print('You cannot make an instance move from ', instance.status.upper(), ' to ', operationObject['targetStatus'])#SHOULD LOG
                     return
+            operation.openStackInfoStart = datetime.strptime(instance.updated,UTC_TIME_FORMAT).timestamp()
             while instance.status != operationObject['targetStatus']:
                 if instance.status.upper() == 'ERROR':
                     print('ERROR') #SHOULD LOG
@@ -90,21 +91,32 @@ class InstanceLifeCycleMetering:
                 instance.get()
                 time.sleep(1)
             finishTimestamp = networkMeter.stopPacketCapture()
-            operation.meteringFinish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # finishTimestamp != operation.meteringFinish
+            operation.meteringFinish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
+            #getDatetimeFromTimestamp = datetime.fromtimestamp(operation.meteringFinish.timestamp()) # Use fromtimestamp instead of utcfromtimestamp
             operation.openStackInfoFinish = datetime.strptime(instance.updated,UTC_TIME_FORMAT).timestamp()
+            operation.meteringDuration = operation.meteringFinish - operation.meteringStart
+            operation.openStackInfoDuration = operation.openStackInfoFinish - operation.openStackInfoStart
             operationList.append(operation)
+            if operation.meteringFinish < operation.openStackInfoFinish:
+                print('ERROR: Network Meter stopped before the operation finished') #SHOULD LOG
+                return
+            if operation.meteringStart > operation.openStackInfoStart:
+                print('ERROR: Network Meter started after the operation started') #SHOULD LOG
+                return
+
+            ## DEBUG:
+            if operationObject['operation'].upper() == 'CREATE':
+                print('\nInstance.created: ', instance.created,'\n')
+                print('\nstored value: ', instance.updated,'\n')
+
+            print('\nStart diff -> ', operation.openStackInfoStart - operation.meteringStart)
+            print('\nMetering start -> ', datetime.fromtimestamp(operation.meteringStart.timestamp()))
+            print('\nOpenStack Info start -> ', datetime.fromtimestamp(operation.openStackInfoStart.timestamp()))
 
 
-            print('\nMetering Finished at: ', datetime.utcfromtimestamp(operation.meteringFinish).strftime(UTC_TIME_FORMAT),'\n')
-            print('Openstack Finished at: ', instance.updated,'\n')
-
-            print('\n===================== TIMESTAMPS =========================\n')
-            print('Metering Timestamp: ', operation.meteringFinish, '\n')
-            print('Openstack Info Timestamp: ', operation.openStackInfoFinish, '\n')
-            print('Metering - OpS: ', operation.meteringFinish - operation.openStackInfoFinish, '\n')
-            # print('OpS - Metering: ', operation.openStackInfoFinish - operation.meteringFinish, '\n')
-
-
+        openSession.add_all(operationList)
+        openSession.commit()
+        openSession.close()
         instance.force_delete()
         if not caching:
             self.openStackUtils.deleteImage(self.instanceImage)

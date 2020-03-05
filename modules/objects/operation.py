@@ -11,6 +11,9 @@ class Operation(DB_INFO.BASE):
     meteringFinish = Column(Integer) #timestamp ???
     openStackInfoStart = Column(Integer) #timestamp ???
     openStackInfoFinish = Column(Integer) #timestamp ???
+
+    #Columns calculated from Metering and OpenStackInfo finish and start
+    #These columns should not exist, but you know...
     meteringDuration = Column(Integer)
     openStackInfoDuration = Column(Integer)
 
