@@ -1,6 +1,7 @@
 import time
 import logging
 import itertools
+import calendar
 from modules.openstack_utils import *
 from modules.network_meter import *
 from modules.objects import db_info
@@ -17,9 +18,9 @@ class InstanceLifeCycleMetering:
                     'imageContainer':'bare'}                         ):
         logging.basicConfig(filename='debug.log', level=logging.DEBUG)
         if execId is None:
-            self.id = next(self.autoId)
+            self.execId = next(self.autoId) +1
         else:
-            self.id = execId
+            self.execId = execId
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
@@ -47,8 +48,8 @@ class InstanceLifeCycleMetering:
             return None
 
 
-        execution = Execution(self.id)
-        print(execution.id) #DEBUUG
+        execution = Execution(self.execId)
+        print(execution.execId) #DEBUUG
         initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
         openSession = initSession()
 
@@ -58,12 +59,16 @@ class InstanceLifeCycleMetering:
         instance = None
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
         elapsedTime = 0
+        operationList = []
         #instance._info['OS-EXT-STS:vm_state']
         #instance.updated
 
         for operationObject in operationObjectList:
             print('operation: ', operationObject['operation'])
-            startTime = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.id) + '_')
+            operation = Operation()
+            operation.execId = self.execId
+            operation.type = operationObject['operation'].upper()
+            operation.meteringStart = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.execId) + '_')
             time.sleep(1) #tcpdump sync
             if operationObject['operation'].upper() == 'CREATE':
                 instance = self.openStackUtils.createInstance('instance',
@@ -83,7 +88,9 @@ class InstanceLifeCycleMetering:
                     return
                 instance.get()
                 time.sleep(1)
-            finishTime = networkMeter.stopPacketCapture()
+            operation.meteringFinish = networkMeter.stopPacketCapture()
+            # openStackInfoFinish = calendar.timegm(.timetuple())
+            operationList.append(operation)
             # time.sleep(1) #should sync (?)
 
         instance.force_delete()
