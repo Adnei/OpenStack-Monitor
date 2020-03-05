@@ -2,6 +2,7 @@ import time
 import logging
 import itertools
 import calendar
+from datetime import datetime
 from modules.openstack_utils import *
 from modules.network_meter import *
 from modules.objects import db_info
@@ -47,7 +48,7 @@ class InstanceLifeCycleMetering:
             print("Please, provide operationObjectList")
             return None
 
-
+        UTC_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
         execution = Execution(self.execId)
         print(execution.execId) #DEBUUG
         initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
@@ -89,9 +90,10 @@ class InstanceLifeCycleMetering:
                 instance.get()
                 time.sleep(1)
             operation.meteringFinish = networkMeter.stopPacketCapture()
-            # openStackInfoFinish = calendar.timegm(.timetuple())
+            operation.openStackInfoFinish = datetime.strptime(updated,TIME_FORMAT).timestamp()
             operationList.append(operation)
-            # time.sleep(1) #should sync (?)
+            print('Metering Finished at: ', datetime.utcfromtimestamp(operation.meteringFinish).strftime(UTC_TIME_FORMAT))
+            print('Openstack Finished at: ', instance.updated)
 
         instance.force_delete()
         if not caching:
