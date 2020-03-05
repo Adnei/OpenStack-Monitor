@@ -90,10 +90,17 @@ class InstanceLifeCycleMetering:
                 instance.get()
                 time.sleep(1)
             operation.meteringFinish = networkMeter.stopPacketCapture()
-            operation.openStackInfoFinish = datetime.strptime(updated,TIME_FORMAT).timestamp()
+            operation.openStackInfoFinish = datetime.strptime(instance.updated,TIME_FORMAT).timestamp()
             operationList.append(operation)
             print('Metering Finished at: ', datetime.utcfromtimestamp(operation.meteringFinish).strftime(UTC_TIME_FORMAT))
             print('Openstack Finished at: ', instance.updated)
+
+            print('\n===================== TIMESTAMPS =========================\n')
+            print('Metering Timestamp: ', operation.meteringFinish, '\n')
+            print('Openstack Info Timestamp: ', operation.openStackInfoFinis, '\n')
+            print('Metering - OpS: ', operation.meteringFinish - operation.openStackInfoFinish, '\n')
+            print('OpS - Metering: ', operation.openStackInfoFinish - operation.meteringFinish, '\n')
+
 
         instance.force_delete()
         if not caching:
