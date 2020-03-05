@@ -58,15 +58,13 @@ class InstanceLifeCycleMetering:
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
         elapsedTime = 0
         operationList = []
-        #instance._info['OS-EXT-STS:vm_state']
-        #instance.updated
-
+        #Other infos about instance -> instance._info['OS-EXT-STS:vm_state']
         for operationObject in operationObjectList:
             print('operation: ', operationObject['operation'])
             operation = Operation()
             operation.execId = execution.execId
             operation.type = operationObject['operation'].upper()
-            startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.execId) + '_')
+            startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(execution.execId) + '_')
             operation.meteringStart = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
             if operationObject['operation'].upper() == 'CREATE':
@@ -102,17 +100,6 @@ class InstanceLifeCycleMetering:
             if operation.meteringStart > operation.openStackInfoStart:
                 print('ERROR: Network Meter started after the operation started') #SHOULD LOG
                 return
-
-            ## DEBUG:
-            if operationObject['operation'].upper() == 'CREATE':
-                print('\nInstance.created: ', instance.created,'\n')
-                print('\nstored value: ', instance.updated,'\n')
-
-            print('\nStart diff -> ', operation.openStackInfoStart - operation.meteringStart)
-            print('\nMetering start -> ', datetime.fromtimestamp(operation.meteringStart))
-            print('\nOpenStack Info start -> ', datetime.fromtimestamp(operation.openStackInfoStart))
-
-
         openSession.add_all(operationList)
         openSession.commit()
         openSession.close()
