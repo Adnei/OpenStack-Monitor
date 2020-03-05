@@ -19,6 +19,7 @@ class OpenStackUtils:
             self.glance = glanceClient('2',session=self.session)
             self.trove = troveClient.Client(session=self.session)
             self.nova = novaClient.Client('2.1', session=self.session)
+            self.instanceAction = self.nova.instance_action
             self.neutron = neutronClient.Client(session=self.session)
 
     def authenticate(self, authInfo=None):

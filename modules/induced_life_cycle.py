@@ -13,15 +13,11 @@ from modules.objects import db_info as DB_INFO
 
 class InstanceLifeCycleMetering:
     autoId = itertools.count()
-    def __init__(self, ifaceList=['lo'], execId=None, imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+    def __init__(self, ifaceList=['lo'], imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
                     'imageName':'fedora31',
                     'imageFormat':'qcow2',
                     'imageContainer':'bare'}                         ):
         logging.basicConfig(filename='debug.log', level=logging.DEBUG)
-        if execId is None:
-            self.execId = next(self.autoId) +1
-        else:
-            self.execId = execId
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
@@ -49,12 +45,13 @@ class InstanceLifeCycleMetering:
             return None
 
         UTC_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
-        execution = Execution(self.execId)
-        print(execution.execId) #DEBUUG
+        START_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
+        execution = Execution()
         initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
         openSession = initSession()
 
-        openSession.add_all([execution])
+        openSession.add(execution)
+        openSession.commit()#SQLAlchemy handles the ID auto increment
 
         fileList = [iface+'.pcap' for iface in self.ifaceList]
         instance = None
@@ -67,7 +64,7 @@ class InstanceLifeCycleMetering:
         for operationObject in operationObjectList:
             print('operation: ', operationObject['operation'])
             operation = Operation()
-            operation.execId = self.execId
+            operation.execId = execution.execId
             operation.type = operationObject['operation'].upper()
             startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(self.execId) + '_')
             operation.meteringStart = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
@@ -83,7 +80,6 @@ class InstanceLifeCycleMetering:
                     print('instance\'s current status is not a required status for ', operationObject['targetStatus'])#SHOULD LOG
                     print('You cannot make an instance move from ', instance.status.upper(), ' to ', operationObject['targetStatus'])#SHOULD LOG
                     return
-            operation.openStackInfoStart = datetime.strptime(instance.updated,UTC_TIME_FORMAT).timestamp()
             while instance.status != operationObject['targetStatus']:
                 if instance.status.upper() == 'ERROR':
                     print('ERROR') #SHOULD LOG
@@ -93,6 +89,9 @@ class InstanceLifeCycleMetering:
             finishTimestamp = networkMeter.stopPacketCapture()
             operation.meteringFinish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
             #getDatetimeFromTimestamp = datetime.fromtimestamp(operation.meteringFinish.timestamp()) # Use fromtimestamp instead of utcfromtimestamp
+            actionReq = list(filter(lambda actionReq: actionReq.action.upper() == operationObject['operation'].upper(),
+                self.openStackUtils.instanceAction.list(instance)))[0]
+            operation.openStackInfoStart = datetime.strptime(actionReq.start_time, START_TIME_FORMAT).timestamp()
             operation.openStackInfoFinish = datetime.strptime(instance.updated,UTC_TIME_FORMAT).timestamp()
             operation.meteringDuration = operation.meteringFinish - operation.meteringStart
             operation.openStackInfoDuration = operation.openStackInfoFinish - operation.openStackInfoStart
@@ -110,8 +109,8 @@ class InstanceLifeCycleMetering:
                 print('\nstored value: ', instance.updated,'\n')
 
             print('\nStart diff -> ', operation.openStackInfoStart - operation.meteringStart)
-            print('\nMetering start -> ', datetime.fromtimestamp(operation.meteringStart.timestamp()))
-            print('\nOpenStack Info start -> ', datetime.fromtimestamp(operation.openStackInfoStart.timestamp()))
+            print('\nMetering start -> ', datetime.fromtimestamp(operation.meteringStart))
+            print('\nOpenStack Info start -> ', datetime.fromtimestamp(operation.openStackInfoStart))
 
 
         openSession.add_all(operationList)
