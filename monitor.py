@@ -44,9 +44,10 @@ def main(argv):
             'anonymousFunction':lambda instance: instance.shelve()
         }
     ]
-
-    instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
+    # @FIXME: Should be able to start N induced life cycles without having to instantiate a new InstanceLifeCycleMetering everytime.
+    # Look at prepareLifeCycleScenario and image caching.
     for idx in range(1,5): #Do N times
+        instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
         instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
 
 if __name__ == "__main__":

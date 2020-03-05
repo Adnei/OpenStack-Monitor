@@ -35,9 +35,6 @@ class InstanceLifeCycleMetering:
         return (self.instanceImage, self.nics)
 
     def startInducedLifeCycle(self, operationObjectList, caching=False):
-        def elapsedTime(referenceTime, current=time.time()):
-            return round(current - referenceTime)
-
         if self.instanceImage is None or self.nics is None:
             print("no image or nics") #SHOULD LOG
             return None
@@ -57,7 +54,6 @@ class InstanceLifeCycleMetering:
         fileList = [iface+'.pcap' for iface in self.ifaceList]
         instance = None
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
-        elapsedTime = 0
         operationList = []
         #Other infos about instance -> instance._info['OS-EXT-STS:vm_state']
         for operationObject in operationObjectList:
