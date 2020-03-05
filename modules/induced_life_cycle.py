@@ -18,6 +18,7 @@ class InstanceLifeCycleMetering:
                     'imageFormat':'qcow2',
                     'imageContainer':'bare'}                         ):
         logging.basicConfig(filename='debug.log', level=logging.DEBUG)
+        self.imageInfo = imageInfo
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
@@ -25,7 +26,7 @@ class InstanceLifeCycleMetering:
 
     def prepareLifeCycleScenario(self, imageInfo):
         #create image and network
-        cachedImage = self.openStackUtils.getImageByName('fedora31')
+        cachedImage = self.openStackUtils.getImageByName(imageInfo['imageName'])
         if cachedImage is None:
             print('Image is not being cached!') #Should Log
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)

@@ -46,7 +46,8 @@ def main(argv):
     ]
 
     instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
-    instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
+    for idx in range(1,5): #Do N times
+        instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
 
 if __name__ == "__main__":
    main(sys.argv[1:])
