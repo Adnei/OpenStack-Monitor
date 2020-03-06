@@ -78,10 +78,13 @@ class InstanceLifeCycleMetering:
                 else:
                     print('instanceServer\'s current status is not a required status for ', operationObject['targetStatus'])#SHOULD LOG
                     print('You cannot make a server status move from ', instanceServer.status.upper(), ' to ', operationObject['targetStatus'])#SHOULD LOG
+                    networkMeter.stopPacketCapture()
                     return
             while instanceServer.status != operationObject['targetStatus']:
                 if instanceServer.status.upper() == 'ERROR':
-                    print('ERROR') #SHOULD LOG
+                    print('Server status: ERROR') #SHOULD LOG
+                    print('Aborting')
+                    networkMeter.stopPacketCapture()
                     return
                 instanceServer.get()
                 time.sleep(1)

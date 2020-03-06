@@ -10,7 +10,7 @@ def main(argv):
 
     # @TODO
     #   FIX argv PARAMETERS
-    #   Parameterize NICs, file names and number of execution
+    #   Parameterize NICs, file names, number of execution and image infos
 
     operationObjectList = [
         {
@@ -45,7 +45,7 @@ def main(argv):
         }
     ]
     instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
-    for idx in range(1,5): #Do N times
+    for idx in range(1,6): #Do N times
         instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
 
 if __name__ == "__main__":
