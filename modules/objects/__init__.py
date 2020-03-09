@@ -1,1 +1,1 @@
-__all__ = ['execution', 'db_info']
+__all__ = ['execution', 'db_info', 'operation', 'metering']
