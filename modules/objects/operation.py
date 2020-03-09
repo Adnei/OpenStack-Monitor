@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship as Relationship
 class Operation(DB_INFO.BASE):
     __tablename__ = 'Operation'
     operation_id = Column(Integer, primary_key=True)
-    exec_id = Column(Integer, ForeignKey('Execution.exec_id', ondelete='cascade')))
+    exec_id = Column(Integer, ForeignKey('Execution.exec_id', ondelete='cascade'))
     type = Column(String)
     metering = Relationship('Metering', uselist=False, back_populates='operation')
     metering_start = Column(Integer) #timestamp ??? Float
@@ -19,8 +19,8 @@ class Operation(DB_INFO.BASE):
     metering_duration = Column(Integer)
     openstack_info_duration = Column(Integer)
 
-        def __init__(self, parentId=None):
-            if parentId is not None:
-                self.exec_id = parentId
+    def __init__(self, parentId=None):
+        if parentId is not None:
+            self.exec_id = parentId
 
 DB_INFO.BASE.metadata.create_all()

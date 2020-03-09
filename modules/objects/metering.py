@@ -4,9 +4,9 @@ from sqlalchemy.orm import relationship as Relationship
 
 
 class Metering(DB_INFO.BASE):
-    __tablename__ = 'Operation'
+    __tablename__ = 'Metering'
     metering_id = Column(Integer, primary_key=True)
-    operation_id = Column(Integer, ForeignKey('Operation.operation_id', ondelete='cascade')))
+    operation_id = Column(Integer, ForeignKey('Operation.operation_id', ondelete='cascade'))
     operation = Relationship('Operation', back_populates='metering')
 
     def __init__(self, parentId=None):

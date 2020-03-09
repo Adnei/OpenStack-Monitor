@@ -54,8 +54,6 @@ class InstanceLifeCycleMetering:
         fileList = [iface+'.pcap' for iface in self.ifaceList]
         instanceServer = None
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
-        operationList = []
-        meteringList = []
         #Other infos about instanceServer -> instanceServer._info['OS-EXT-STS:vm_state']
 
         #
@@ -104,17 +102,20 @@ class InstanceLifeCycleMetering:
             operation.openstack_info_finish = datetime.strptime(instanceServer.updated,UTC_TIME_FORMAT).timestamp()
             operation.metering_duration = operation.metering_finish - operation.metering_start
             operation.openstack_info_duration = operation.openstack_info_finish - operation.openstack_info_start
-            operationList.append(operation)
-            metering = Metering(operation.operation_id)
-            meteringList.append(metering)
+
             if operation.metering_finish < operation.openstack_info_finish:
                 print('ERROR: Network Meter stopped before the operation finished') #SHOULD LOG
                 return None
             if operation.metering_start > operation.openstack_info_start:
                 print('ERROR: Network Meter started after the operation started') #SHOULD LOG
                 return None
-        openSession.add_all(operationList)
-        openSession.add_all(meteringList)
+
+
+            openSession.add(operation)
+            openSession.flush()
+            metering = Metering(operation.operation_id)
+            openSession.add(metering)
+
         openSession.commit()
         openSession.close()
         instanceServer.force_delete()
