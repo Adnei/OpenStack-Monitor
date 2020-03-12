@@ -8,14 +8,13 @@ class Operation(DB_INFO.BASE):
     operation_id = Column(Integer, primary_key=True)
     exec_id = Column(Integer, ForeignKey('Execution.exec_id', ondelete='cascade'))
     type = Column(String)
-    metering = Relationship('Metering', uselist=False, back_populates='operation')
+    metering_list = Relationship('Metering')
     metering_start = Column(Integer) #timestamp ??? Float
     metering_finish = Column(Integer) #timestamp ??? Float
     openstack_info_start = Column(Integer) #timestamp ??? Float
     openstack_info_finish = Column(Integer) #timestamp ??? Float
 
     #Columns calculated from Metering and OpenStackInfo finish and start
-    #These columns should not exist, but you know...
     metering_duration = Column(Integer)
     openstack_info_duration = Column(Integer)
 

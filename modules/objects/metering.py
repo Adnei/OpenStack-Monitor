@@ -6,12 +6,15 @@ from sqlalchemy.orm import relationship as Relationship
 class Metering(DB_INFO.BASE):
     __tablename__ = 'Metering'
     metering_id = Column(Integer, primary_key=True)
+    network_interface = Column(String, nullable=False)
     operation_id = Column(Integer, ForeignKey('Operation.operation_id', ondelete='cascade'))
-    operation = Relationship('Operation', back_populates='metering')
+    packet_info_list = Relationship('PacketInfo')
+    api_info_list = Relationship('ApiInfo')
 
-    def __init__(self, parentId=None):
+    def __init__(self, parentId=None, iface=None):
         if parentId is not None:
             self.operation_id = parentId
-
+        if iface is not None:
+            self.network_interface = iface
 
 DB_INFO.BASE.metadata.create_all()

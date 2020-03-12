@@ -113,8 +113,12 @@ class InstanceLifeCycleMetering:
 
             openSession.add(operation)
             openSession.flush()
-            metering = Metering(operation.operation_id)
-            openSession.add(metering)
+            [
+                openSession.add(
+                    Metering(parentId=operation.operation_id, iface=iface)
+                )
+                for iface in self.ifaceList 
+            ]
 
         openSession.commit()
         openSession.close()
