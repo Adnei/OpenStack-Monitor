@@ -6,7 +6,9 @@ from sqlalchemy.orm import relationship as Relationship
 class PacketInfo(DB_INFO.BASE):
     __tablename__ = 'PacketInfo'
     packet_info_id = Column(Integer, primary_key=True)
-    time = Coumn(Integer) #timestamp
+    time = Column(String) #timestamp
+    src_ip = Column(String)
+    dst_ip = Column(String)
     src_port = Column(Integer)
     dst_port = Column(Integer)
     type = Column(String) #Rest or RPC (?)

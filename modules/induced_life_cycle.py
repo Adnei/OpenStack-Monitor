@@ -5,10 +5,18 @@ import calendar
 from datetime import datetime
 from modules.openstack_utils import *
 from modules.network_meter import *
+
+#FIX Object imports
+#Objects must be imported somewhere else before induced life cycle starts
+#Objects must be created at DB beforehand
+
 from modules.objects import db_info
 from modules.objects.execution import *
 from modules.objects.operation import *
 from modules.objects.metering import *
+from modules.objects.service import *
+from modules.objects.packet_info import *
+from modules.objects.api_info import *
 from modules.objects import db_info as DB_INFO
 #@TODO: proper indent too long lines
 
@@ -117,7 +125,7 @@ class InstanceLifeCycleMetering:
                 openSession.add(
                     Metering(parentId=operation.operation_id, iface=iface)
                 )
-                for iface in self.ifaceList 
+                for iface in self.ifaceList
             ]
 
         openSession.commit()

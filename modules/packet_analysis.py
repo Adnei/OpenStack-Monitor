@@ -14,6 +14,7 @@ class PacketAnalysis:
             initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
             openSession = initSession()
             operation = openSession.query(Operation).get(meteringObj.operation_id)
+            openSession.close()
             pcapFile = operation.type.upper() + '_' + str(operation.exec_id) + '_' +
                         meteringObj.network_interface + '.pcap'
 

@@ -2,7 +2,8 @@ import subprocess as sub
 import time
 
 #@TODO: proper indent too long lines
-
+#@TODO: Use pyshark instead of tcpdump
+#       It will do the same thing, but with a python wrapper
 class NetworkMeter:
     def __init__(self, ifaceList=['lo'], outputFileList=['lo.pcap']):
         if len(ifaceList) != len(outputFileList):
