@@ -1,5 +1,6 @@
 from modules.network_meter import *
 from modules.induced_life_cycle import *
+from modules.objects import db_info as DB_INFO
 import time
 import sys, getopt
 
@@ -47,6 +48,16 @@ def main(argv):
     instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
     for idx in range(1,3): #Do N times
         instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
+
+    initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
+    openSession = initSession()
+    meteringList = openSession.query(Metering).all()
+    openSession.close()
+    analysisList = [TrafficAnalysis(metering) for metering in meteringList]
+    analysisList[0].printPyShark()
+
+
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])

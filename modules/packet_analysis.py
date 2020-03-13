@@ -1,11 +1,13 @@
 import logging
 import itertools
 import calendar
+import pyshark as PyShark
 from modules.objects import db_info as DB_INFO
 from modules.objects.operation import *
 from modules.objects.metering import *
 
-class PacketAnalysis:
+
+class TrafficAnalysis:
     def __init__(self, meteringObj=None, pcapFile=None):
         if meteringObj is None:
             print('ERROR: No Metering object provided!') #SHOULD LOG
@@ -20,3 +22,7 @@ class PacketAnalysis:
 
         self.pcapFile = pcapFile
         self.meteringObj = meteringObj
+
+    def printPyShark(self):
+        captureFile = PyShark.FileCapture(self.pcapFile)
+        print(captureFile[0])
