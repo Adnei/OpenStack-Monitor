@@ -1,4 +1,5 @@
 sqlalchemy
+pyshark
 keystoneauth1
 python-keystoneclient
 python-glanceclient

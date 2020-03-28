@@ -17,8 +17,7 @@ class TrafficAnalysis:
             openSession = initSession()
             operation = openSession.query(Operation).get(meteringObj.operation_id)
             openSession.close()
-            pcapFile = operation.type.upper() + '_' + str(operation.exec_id) + '_' +
-                        meteringObj.network_interface + '.pcap'
+            pcapFile = operation.type.upper() + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
         self.pcapFile = pcapFile
         self.meteringObj = meteringObj

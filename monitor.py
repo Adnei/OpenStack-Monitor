@@ -1,6 +1,7 @@
 from modules.network_meter import *
 from modules.induced_life_cycle import *
 from modules.objects import db_info as DB_INFO
+from modules.packet_analysis import *
 import time
 import sys, getopt
 
