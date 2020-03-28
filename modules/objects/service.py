@@ -19,7 +19,7 @@ class Service(DB_INFO.BASE):
 
 DB_INFO.BASE.metadata.create_all()
 
-defaultServices = [ Service(name=service) for service in [  'nova',
+defaultServices = [ Service(serviceName=service) for service in [  'nova',
                                                             'keystone',
                                                             'swift',
                                                             'glance',

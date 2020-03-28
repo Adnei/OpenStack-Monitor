@@ -1,6 +1,7 @@
 from modules.network_meter import *
 from modules.induced_life_cycle import *
 from modules.objects import db_info as DB_INFO
+from modules.objects import service
 from modules.packet_analysis import *
 import time
 import sys, getopt
@@ -47,7 +48,7 @@ def main(argv):
         }
     ]
     instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
-    for idx in range(1,3): #Do N times
+    for idx in range(1,2): #Do N times
         instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
 
     initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
