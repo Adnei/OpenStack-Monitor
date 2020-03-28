@@ -2,6 +2,7 @@ from modules.network_meter import *
 from modules.induced_life_cycle import *
 from modules.objects import db_info as DB_INFO
 from modules.packet_analysis import *
+from modules.objects.service import *
 import time
 import sys, getopt
 
@@ -58,6 +59,17 @@ def main(argv):
     analysisList[0].printPyShark()
 
 
+
+
+    defaultServices = [ Service(serviceName=service) for service in [  'nova',
+                                                                'keystone',
+                                                                'swift',
+                                                                'glance',
+                                                                'cinder',
+                                                                'neutron' ]]
+    openSession = initSession()
+    openSession.commit_all(defaultServices)
+    openSession.close()
 
 
 if __name__ == "__main__":

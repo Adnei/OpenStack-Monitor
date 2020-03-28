@@ -18,14 +18,3 @@ class Service(DB_INFO.BASE):
 
 
 DB_INFO.BASE.metadata.create_all()
-
-defaultServices = [ Service(serviceName=service) for service in [  'nova',
-                                                            'keystone',
-                                                            'swift',
-                                                            'glance',
-                                                            'cinder',
-                                                            'neutron' ]]
-initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
-openSession = initSession()
-openSession.commit_all(defaultServices)
-openSession.close()
