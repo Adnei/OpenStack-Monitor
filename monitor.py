@@ -68,7 +68,8 @@ def main(argv):
                                                                 'cinder',
                                                                 'neutron' ]]
     openSession = initSession()
-    openSession.commit_all(defaultServices)
+    openSession.add_all(defaultServices)
+    openSession.commit()
     openSession.close()
 
 
