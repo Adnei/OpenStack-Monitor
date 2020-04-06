@@ -55,11 +55,6 @@ def main(argv):
     openSession = initSession()
     meteringList = openSession.query(Metering).all()
     openSession.close()
-    analysisList = [TrafficAnalysis(metering) for metering in meteringList]
-    analysisList[0].printPyShark()
-
-
-
 
     defaultServices = [ Service(serviceName=service) for service in [  'nova',
                                                                 'keystone',
@@ -71,6 +66,13 @@ def main(argv):
     openSession.add_all(defaultServices)
     openSession.commit()
     openSession.close()
+
+    analysisList = [TrafficAnalysis(metering) for metering in meteringList]
+    count=0
+    for trafficAnalysis in analysisList:
+        print("executing analysis -> ", count)
+        count+=1
+        trafficAnalysis.runAnalysis()
 
 
 if __name__ == "__main__":
