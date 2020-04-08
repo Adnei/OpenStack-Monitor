@@ -8,7 +8,7 @@ from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
 import dpkt
-import modules.utils
+from modules.utils import *
 
 
 class TrafficAnalysis:
@@ -70,8 +70,8 @@ class TrafficAnalysis:
 
             #TODO: Find out if packet has HTTP and AMQP. If it does then add to layers string
             packetInfo.layers = layers
-            packetInfo.src_ip = utils.inetToStr(ip.src)
-            packetInfo.dst_ip = utils.inetToStr(ip.dst)
+            packetInfo.src_ip = inetToStr(ip.src)
+            packetInfo.dst_ip = inetToStr(ip.dst)
             packetInfo.size_bytes = ip.len
             #TODO: mapping service and getting service id
             packetInfo.metering_id = self.meteringObj.metering_id

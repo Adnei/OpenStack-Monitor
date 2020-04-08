@@ -1,4 +1,3 @@
-import modules.utils
 from modules.objects import db_info as DB_INFO
 from sqlalchemy import Column, Integer, Unicode, UnicodeText, String, ForeignKey
 from sqlalchemy.orm import relationship as Relationship

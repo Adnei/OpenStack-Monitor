@@ -5,7 +5,6 @@ from modules.packet_analysis import *
 from modules.objects.service import *
 import time
 import sys, getopt
-import modules.utils
 
 
 #@TODO: proper indent too long lines
