@@ -1,5 +1,5 @@
+from modules.loggers import *
 import time
-#import logging
 import itertools
 import calendar
 from datetime import datetime
@@ -9,7 +9,7 @@ from modules.network_meter import *
 #FIX Object imports
 #Objects must be imported somewhere else before induced life cycle starts
 #Objects must be created at DB beforehand
-
+''
 from modules.objects import db_info
 from modules.objects.execution import *
 from modules.objects.operation import *
@@ -26,7 +26,6 @@ class InstanceLifeCycleMetering:
                     'imageName':'fedora31',
                     'imageFormat':'qcow2',
                     'imageContainer':'bare'}                         ):
-        #logging.basicConfig(filename='debug.log', level=logging.DEBUG)
         self.imageInfo = imageInfo
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
@@ -37,7 +36,7 @@ class InstanceLifeCycleMetering:
         #create image and network
         cachedImage = self.openStackUtils.getImageByName(imageInfo['imageName'])
         if cachedImage is None:
-            print('Image is not being cached!') #Should Log
+            defaultLogger.warning('Image cache is disabled!')
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
         self.nics = self.openStackUtils.networkSetup()
 
@@ -47,7 +46,7 @@ class InstanceLifeCycleMetering:
         if self.instanceImage is None or self.nics is None:
             self.instanceImage, self.nics = self.prepareLifeCycleScenario(self.imageInfo)
         if operationObjectList is None:
-            print("Please, provide operationObjectList")
+            defaultLogger.error("Please, provide operationObjectList")
             return None
 
         UTC_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -69,7 +68,7 @@ class InstanceLifeCycleMetering:
         #
 
         for operationObject in operationObjectList:
-            print('operation: ', operationObject['operation'])
+            defaultLogger.info('operation: %s started', operationObject['operation'])
             operation = Operation()
             operation.exec_id = execution.exec_id
             operation.type = operationObject['operation'].upper()
@@ -81,23 +80,23 @@ class InstanceLifeCycleMetering:
                                 self.instanceImage, operationObject['params']['flavor'], self.nics)
             else:
                 if instanceServer.status.upper() in operationObject['requiredStatus']:
-                    print('called anonymousFunction!')
+                    defaultLogger.info('called anonymousFunction!')
                     operationObject['anonymousFunction'](instanceServer)
                 else:
-                    print('instanceServer\'s current status is not a required status for ', operationObject['targetStatus'])#SHOULD LOG
-                    print('You cannot make a server status move from ', instanceServer.status.upper(), ' to ', operationObject['targetStatus'])#SHOULD LOG
+                    defaultLogger.error('instanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
+                    defaultLogger.error('You cannot make a server status move from %s to %s', instanceServer.status.upper(), operationObject['targetStatus'])
                     networkMeter.stopPacketCapture()
                     return None
             while instanceServer.status != operationObject['targetStatus']:
                 if instanceServer.status.upper() == 'ERROR':
-                    print('Server status: ERROR') #SHOULD LOG
-                    print('Aborting')
+                    defaultLogger.error('Server status: ERROR')
+                    defaultLogger.error('Aborting')
                     networkMeter.stopPacketCapture()
                     return None
                 instanceServer.get()
                 time.sleep(1)
             finishTimestamp = networkMeter.stopPacketCapture()
-
+            defaultLogger.info('operation: %s finished', operationObject['operation'])
             #
             # Fulfilling objects for data persistence
             #
@@ -112,10 +111,10 @@ class InstanceLifeCycleMetering:
             operation.openstack_info_duration = operation.openstack_info_finish - operation.openstack_info_start
 
             if operation.metering_finish < operation.openstack_info_finish:
-                print('ERROR: Network Meter stopped before the operation finished') #SHOULD LOG
+                defaultLogger.error('ERROR: Network Meter stopped before the operation finished')
                 return None
             if operation.metering_start > operation.openstack_info_start:
-                print('ERROR: Network Meter started after the operation started') #SHOULD LOG
+                defaultLogger.error('ERROR: Network Meter started after the operation started')
                 return None
 
 

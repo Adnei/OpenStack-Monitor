@@ -1,25 +1,31 @@
 import logging
 
-# Create a custom logger
+# Custom Loggers
 defaultLogger = logging.getLogger('default_logger')
+sqlLogger = logging.getLogger('sqlalchemy')
+sqlLogger.propagate = False
 
-# Create handlers
+#Handlers
 consoleHandler = logging.StreamHandler()
-fileHandler = logging.FileHandler('general_logs.log')
-consoleHandler.setLevel(logging.WARNING)
-fileHandler.setLevel(logging.DEBUG)
+generalFileHandler = logging.FileHandler('general_logs.log')
+sqlFileHandler = logging.FileHandler('sqlAlchemy.log')
 
-# Create formatters and add it to handlers
+#Logging Level
+consoleHandler.setLevel(logging.WARNING)
+generalFileHandler.setLevel(logging.DEBUG)
+sqlFileHandler.setLevel(logging.DEBUG)
+
+# Custom Formatters
 consoleFormat = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
 fileFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Setting Formatters
 consoleHandler.setFormatter(consoleFormat)
-fileHandler.setFormatter(fileFormat)
+generalFileHandler.setFormatter(fileFormat)
+sqlFileHandler.setFormatter
 
-# Add handlers to the logger
+#Adding Handlers
 defaultLogger.addHandler(consoleHandler)
-defaultLogger.addHandler(fileHandler)
-
-#defaultLogger.warning('This is a warning')
-#defaultLogger.error('This is an error')
-
-sqlLogger = logging.getLogger('sqlalchemy')
+defaultLogger.addHandler(generalFileHandler)
+sqlLogger.addHandler(consoleHandler)
+sqlLogger.addHandler(sqlFileHandler)
