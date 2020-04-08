@@ -86,23 +86,24 @@ class TrafficAnalysis:
         packetNumber = 0
         referenceTime = 0
         ignoredPackets = 0
-        pcapFile = open(self.pcapFile, 'rb')
-        dpktPcap = dpkt.pcap.Reader(pcapFile)
-        for timestamp, packet in dpktPcap:
-            if packetNumber == 0:
-                referenceTime = timestamp
-            else:
-                if timestamp < referenceTime:
-                    print('ERROR!!! Packets are not sorted by timestamp')
-                    break
-            ignored, packetInfo = buildPacketInfo(packetNumber, packet, timestamp, referenceTime)
-            if ignored:
-                ignoredPackets += 1
-                continue
-            openSession.add(packetInfo)
-            # openSession.commit()
-            packetNumber+= 1
+        with open(self.pcapFile, 'rb') as pcapFile:
+            dpktPcap = dpkt.pcap.Reader(pcapFile)
+            for timestamp, packet in dpktPcap:
+                if packetNumber == 0:
+                    referenceTime = timestamp
+                else: #It's not necessary, but just to make sure it's sorted by timestamp
+                    if timestamp < referenceTime:
+                        print('ERROR!!! Packets are not sorted by timestamp')
+                        break
+                ignored, packetInfo = buildPacketInfo(packetNumber, packet, timestamp, referenceTime)
+                if ignored:
+                    ignoredPackets += 1
+                    continue
+                openSession.add(packetInfo)
+                # openSession.commit()
+                packetNumber+= 1
         openSession.commit()
         openSession.close()
+
         #LOG ignoredPackets number
         return ignoredPackets
