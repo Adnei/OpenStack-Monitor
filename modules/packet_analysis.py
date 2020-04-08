@@ -8,7 +8,7 @@ from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
 import dpkt
-from modules.utils import inetToStr
+import modules.utils
 
 
 class TrafficAnalysis:
@@ -70,9 +70,8 @@ class TrafficAnalysis:
 
             #TODO: Find out if packet has HTTP and AMQP. If it does then add to layers string
             packetInfo.layers = layers
-            packetInfo.src_ip = inetToStr(ip.src)
-            packetInfo.dst_ip = inetToStr(ip.dst)
-            print('packet len --> ', ip.length)
+            packetInfo.src_ip = utils.inetToStr(ip.src)
+            packetInfo.dst_ip = utils.inetToStr(ip.dst)
             packetInfo.size_bytes = ip.len
             #TODO: mapping service and getting service id
             packetInfo.metering_id = self.meteringObj.metering_id
@@ -90,7 +89,6 @@ class TrafficAnalysis:
         pcapFile = open(self.pcapFile, 'rb')
         dpktPcap = dpkt.pcap.Reader(pcapFile)
         for timestamp, packet in dpktPcap:
-            print('PACKET --> ', packetNumber)
             if packetNumber == 0:
                 referenceTime = timestamp
             else:
@@ -106,3 +104,5 @@ class TrafficAnalysis:
             packetNumber+= 1
         openSession.commit()
         openSession.close()
+        #LOG ignoredPackets number
+        return ignoredPackets

@@ -5,6 +5,7 @@ from modules.packet_analysis import *
 from modules.objects.service import *
 import time
 import sys, getopt
+import modules.utils
 
 
 #@TODO: proper indent too long lines
@@ -72,7 +73,7 @@ def main(argv):
     for trafficAnalysis in analysisList:
         print("executing analysis -> ", count)
         count+=1
-        trafficAnalysis.runAnalysis()
+        ignoredPacketsCounter = trafficAnalysis.runAnalysis()
 
 
 if __name__ == "__main__":

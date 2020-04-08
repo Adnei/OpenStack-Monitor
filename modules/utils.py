@@ -1,5 +1,10 @@
 import socket
+import logging
 #import datetime
+
+sqlAlchemyHandler = logging.FileHandler('sqlAlchemyLogs.log')
+sqlAlchemyHandler.setLevel(logging.DEBUG)
+logging.getLogger('sqlalchemy').addHandler(sqlAlchemyHandler)
 
 #Source: https://dpkt.readthedocs.io/en/latest/_modules/examples/print_packets.html
 def inetToStr(inet):
