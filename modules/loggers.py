@@ -1,13 +1,16 @@
 import logging
 
+logging.root.setLevel(logging.NOTSET)
+
 # Custom Loggers
 defaultLogger = logging.getLogger('default_logger')
-sqlLogger = logging.getLogger('sqlalchemy')
+sqlLogger = logging.getLogger('sqlalchemy.engine.base.Engine')
 sqlLogger.propagate = False
 
 #Handlers
 defaultConsoleHandler = logging.StreamHandler()
-generalFileHandler = logging.FileHandler('general_logs.log')
+generalFileHandler = logging.FileHandler('runtime.log')
+sqlConsoleHandler = logging.StreamHandler()
 sqlFileHandler = logging.FileHandler('sqlAlchemy.log')
 
 #Logging Level

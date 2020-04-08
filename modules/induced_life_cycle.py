@@ -68,7 +68,7 @@ class InstanceLifeCycleMetering:
         #
 
         for operationObject in operationObjectList:
-            defaultLogger.info('operation: %s started\n' % operationObject['operation'])
+            defaultLogger.info('operation: %s started\n', operationObject['operation'])
             operation = Operation()
             operation.exec_id = execution.exec_id
             operation.type = operationObject['operation'].upper()
@@ -97,6 +97,7 @@ class InstanceLifeCycleMetering:
                 time.sleep(1)
             finishTimestamp = networkMeter.stopPacketCapture()
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
+            defaultLogger.info('========================================================================\n\n')
             #
             # Fulfilling objects for data persistence
             #

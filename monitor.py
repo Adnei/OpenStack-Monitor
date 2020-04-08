@@ -71,7 +71,7 @@ def main(argv):
     analysisList = [TrafficAnalysis(metering) for metering in meteringList]
     count=0
     for trafficAnalysis in analysisList:
-        defaultLogger.info("Traffic analysis started \n Analysing metering id: %s", str(trafficAnalysis.meteringObj.metering_id))
+        defaultLogger.info("Traffic analysis started\nAnalysing metering id: %s", str(trafficAnalysis.meteringObj.metering_id))
         count+=1
         ignoredPacketsCounter = trafficAnalysis.runAnalysis()
         defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
