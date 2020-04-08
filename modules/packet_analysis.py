@@ -7,6 +7,7 @@ from modules.objects.operation import *
 from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
+from modules.utils import inetToStr
 
 
 class TrafficAnalysis:
@@ -37,34 +38,68 @@ class TrafficAnalysis:
         print(captureFile[0])
 
     def runAnalysis(self):
-        def buildPacketInfo(packet, referenceTime):
-            packetInfo = PacketInfo(packetNumber=int(packet.number))
-            packetInfo.sniff_timestamp = packet.sniff_timestamp
-            packetInfo.time = (packet.sniff_time - referenceTime).total_seconds()
-            #Try Catch
-            packetInfo.src_ip = packet.ip.src
-            packetInfo.dst_ip = packet.ip.dst
-            packetInfo.src_port = packet[packet.transport_layer].srcport
-            packetInfo.dst_port = packet[packet.transport_layer].dstport
+        def buildPacketInfo(packetNumber, packet, packetTimestamp, referenceTime):
+            ignored = False
+            packetInfo = PacketInfo(packetNumber=packetNumber)
+            packetInfo.sniff_timestamp = packetTimestamp
+            packetInfo.time = round(packetTimestamp - referenceTime, 6)
+
+            ethLayer = dpkt.ethernet.Ethernet(packet)
+            # Make sure the Ethernet frame contains an IP packet
+            if not isinstance(ethLayer.data, dpkt.ip.IP):
+                print ('Non IP Packet type not supported --> ', ethLayer.data.__class__.__name__, '\n')
+                ignored = True
+                return (ignored, None)
+            ip = ethLayer.data
             layers = ''
-            for layer in packet.layers:
-                if(layer.layer_name not in layers):
-                    layers += layer.layer_name + ' '
-            packetInfo.layers = layers
-            packetInfo.size_bytes = packet.length
-            #service id
+            if ip.p == dpkt.ip.IP_PROTO_TCP:
+                layers += 'tcp '
+                TCP = ip.data
+                srcport = TCP.sport
+                dstport = TCP.dport
+            elif ip.p == dpkt.ip.IP_PROTO_UDP:
+                UDP = ip.data
+                layers += 'udp '
+                packetInfo.src_port = UDP.sport
+                packetInfo.dst_port = UDP.dport
+            else:
+                print('Transport layer protocol not supported. Only TCP and UDP are supported')
+                ignored = True
+                return (ignored, None)
+
+            packetInfo.src_ip = inetToStr(ip.src)
+            packetInfo.dst_ip = inetToStr(ip.dst)
+            print('packet len --> ', ip.length)
+            packetInfo.size_bytes = ip.length
+            #TODO: mapping service and getting service id
             packetInfo.metering_id = self.meteringObj.metering_id
 
-            return packetInfo
+            return (ignored, packetInfo)
 
         def buildApiInfo(packet, referenceTime):
             print('NOT YET')
 
-        capFile = PyShark.FileCapture(self.pcapFile)
         initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
         openSession = initSession()
-        for packet in capFile:
-            packetInfo = buildPacketInfo(packet, capFile[0].sniff_time)
+        packetNumber = 0
+        referenceTime = 0
+        ignoredPackets = 0
+        pcapFile = open(self.pcapFile, 'rb')
+        dpktPcap = dpkt.pcap.Reader(pcapFile)
+        for timestamp, packet in dpktPcap:
+            print('PACKET --> ', packetNumber)
+            if packetNumber == 0:
+                referenceTime = timestamp
+            else:
+                if timestamp < referenceTime:
+                    print('ERROR!!! Packets are not sorted by timestamp')
+                    break
+            ignored, packetInfo = buildPacketInfo(packetNumber, packet, packetTimestamp, referenceTime)
+            if ignored:
+                ignoredPackets += 1
+                continue
             openSession.add(packetInfo)
-        openSession.commit()
+            openSession.commit()
+            packetNumber+= 1
+        # openSession.commit()
         openSession.close()

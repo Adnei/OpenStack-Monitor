@@ -12,7 +12,8 @@ class PacketInfo(DB_INFO.BASE):
     dst_ip = Column(String)
     src_port = Column(Integer)
     dst_port = Column(Integer)
-    layers = Column(String) #Rest or RPC (?)
+    #layers = Column(String) #Rest or RPC (?)
+    #TODO: Identify AMQP packet
     size_bytes = Column(Integer) #Float (?)
     service_id = Column(Integer, ForeignKey('Service.service_id', ondelete='cascade'))
     metering_id = Column(Integer, ForeignKey('Metering.metering_id', ondelete='cascade'))
