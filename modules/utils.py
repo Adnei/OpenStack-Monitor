@@ -1,5 +1,5 @@
 import socket
-import logging
+# import logging
 #import datetime
 
 #Source: https://dpkt.readthedocs.io/en/latest/_modules/examples/print_packets.html

@@ -1,5 +1,5 @@
 import time
-import logging
+#import logging
 import itertools
 import calendar
 from datetime import datetime
@@ -26,7 +26,7 @@ class InstanceLifeCycleMetering:
                     'imageName':'fedora31',
                     'imageFormat':'qcow2',
                     'imageContainer':'bare'}                         ):
-        logging.basicConfig(filename='debug.log', level=logging.DEBUG)
+        #logging.basicConfig(filename='debug.log', level=logging.DEBUG)
         self.imageInfo = imageInfo
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo

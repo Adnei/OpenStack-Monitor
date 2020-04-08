@@ -1,5 +1,5 @@
 import time
-import logging
+# import logging
 from os import environ as env
 from novaclient import client as novaClient
 from keystoneauth1.identity import v3

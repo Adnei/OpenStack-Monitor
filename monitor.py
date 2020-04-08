@@ -1,3 +1,4 @@
+from modules.loggers import *
 from modules.network_meter import *
 from modules.induced_life_cycle import *
 from modules.objects import db_info as DB_INFO
@@ -73,7 +74,7 @@ def main(argv):
         print("executing analysis -> ", count)
         count+=1
         ignoredPacketsCounter = trafficAnalysis.runAnalysis()
-
+        defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
 
 if __name__ == "__main__":
    main(sys.argv[1:])

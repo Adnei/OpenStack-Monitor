@@ -1,4 +1,5 @@
-import logging
+# import logging
+from modules.loggers import *
 import itertools
 import datetime
 import pyshark as PyShark
@@ -10,6 +11,7 @@ from modules.objects.service import *
 import dpkt
 from modules.utils import *
 
+taLogger = logging.getLogger
 
 class TrafficAnalysis:
     def __init__(self, meteringObj=None, pcapFile=None):
@@ -21,7 +23,7 @@ class TrafficAnalysis:
             return services
 
         if meteringObj is None:
-            print('ERROR: No Metering object provided!') #SHOULD LOG
+            defaultLogger.error('ERROR: No Metering object provided!')
             return None
         if pcapFile is None:
             initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
@@ -48,7 +50,7 @@ class TrafficAnalysis:
             ethLayer = dpkt.ethernet.Ethernet(packet)
             # Make sure the Ethernet frame contains an IP packet
             if not isinstance(ethLayer.data, dpkt.ip.IP):
-                print ('Non IP Packet type not supported --> ', ethLayer.data.__class__.__name__, '\n')
+                defaultLogger.critical('Non IP Packet type not supported: %s \n', ethLayer.data.__class__.__name__)
                 ignored = True
                 return (ignored, None)
             ip = ethLayer.data
@@ -64,7 +66,7 @@ class TrafficAnalysis:
                 packetInfo.src_port = UDP.sport
                 packetInfo.dst_port = UDP.dport
             else:
-                print('Transport layer protocol not supported. Only TCP and UDP are supported')
+                defaultLogger.critical('Transport layer protocol not supported. Only TCP and UDP are supported')
                 ignored = True
                 return (ignored, None)
 
@@ -93,7 +95,7 @@ class TrafficAnalysis:
                     referenceTime = timestamp
                 else: #It's not necessary, but just to make sure it's sorted by timestamp
                     if timestamp < referenceTime:
-                        print('ERROR!!! Packets are not sorted by timestamp')
+                        defaultLogger.error('ERROR!!! Packets are not sorted by timestamp')
                         break
                 ignored, packetInfo = buildPacketInfo(packetNumber, packet, timestamp, referenceTime)
                 if ignored:
