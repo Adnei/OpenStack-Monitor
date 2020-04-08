@@ -68,7 +68,7 @@ class InstanceLifeCycleMetering:
         #
 
         for operationObject in operationObjectList:
-            defaultLogger.info('operation: %s started', operationObject['operation'])
+            defaultLogger.info('operation: %s started\n' % operationObject['operation'])
             operation = Operation()
             operation.exec_id = execution.exec_id
             operation.type = operationObject['operation'].upper()
@@ -80,23 +80,23 @@ class InstanceLifeCycleMetering:
                                 self.instanceImage, operationObject['params']['flavor'], self.nics)
             else:
                 if instanceServer.status.upper() in operationObject['requiredStatus']:
-                    defaultLogger.info('called anonymousFunction!')
+                    defaultLogger.info('called anonymousFunction!\n')
                     operationObject['anonymousFunction'](instanceServer)
                 else:
                     defaultLogger.error('instanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
-                    defaultLogger.error('You cannot make a server status move from %s to %s', instanceServer.status.upper(), operationObject['targetStatus'])
+                    defaultLogger.error('You cannot make a server status move from %s to %s\n', instanceServer.status.upper(), operationObject['targetStatus'])
                     networkMeter.stopPacketCapture()
                     return None
             while instanceServer.status != operationObject['targetStatus']:
                 if instanceServer.status.upper() == 'ERROR':
                     defaultLogger.error('Server status: ERROR')
-                    defaultLogger.error('Aborting')
+                    defaultLogger.error('Aborting\n')
                     networkMeter.stopPacketCapture()
                     return None
                 instanceServer.get()
                 time.sleep(1)
             finishTimestamp = networkMeter.stopPacketCapture()
-            defaultLogger.info('operation: %s finished', operationObject['operation'])
+            defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             #
             # Fulfilling objects for data persistence
             #

@@ -6,26 +6,27 @@ sqlLogger = logging.getLogger('sqlalchemy')
 sqlLogger.propagate = False
 
 #Handlers
-consoleHandler = logging.StreamHandler()
+defaultConsoleHandler = logging.StreamHandler()
 generalFileHandler = logging.FileHandler('general_logs.log')
 sqlFileHandler = logging.FileHandler('sqlAlchemy.log')
 
 #Logging Level
-consoleHandler.setLevel(logging.WARNING)
+defaultConsoleHandler.setLevel(logging.INFO)
 generalFileHandler.setLevel(logging.DEBUG)
 sqlFileHandler.setLevel(logging.DEBUG)
+sqlConsoleHandler.setLevel(logging.WARNING)
 
 # Custom Formatters
 consoleFormat = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
 fileFormat = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 # Setting Formatters
-consoleHandler.setFormatter(consoleFormat)
+defaultConsoleHandler.setFormatter(consoleFormat)
 generalFileHandler.setFormatter(fileFormat)
 sqlFileHandler.setFormatter
 
 #Adding Handlers
-defaultLogger.addHandler(consoleHandler)
+defaultLogger.addHandler(defaultConsoleHandler)
 defaultLogger.addHandler(generalFileHandler)
-sqlLogger.addHandler(consoleHandler)
+sqlLogger.addHandler(sqlConsoleHandler)
 sqlLogger.addHandler(sqlFileHandler)
