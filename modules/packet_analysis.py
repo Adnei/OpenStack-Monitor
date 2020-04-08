@@ -7,6 +7,7 @@ from modules.objects.operation import *
 from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
+import dpkt
 from modules.utils import inetToStr
 
 
@@ -53,10 +54,10 @@ class TrafficAnalysis:
             ip = ethLayer.data
             layers = ''
             if ip.p == dpkt.ip.IP_PROTO_TCP:
-                layers += 'tcp '
                 TCP = ip.data
-                srcport = TCP.sport
-                dstport = TCP.dport
+                layers += 'tcp '
+                packetInfo.src_port = TCP.sport
+                packetInfo.dst_port = TCP.dport
             elif ip.p == dpkt.ip.IP_PROTO_UDP:
                 UDP = ip.data
                 layers += 'udp '
@@ -67,10 +68,12 @@ class TrafficAnalysis:
                 ignored = True
                 return (ignored, None)
 
+            #TODO: Find out if packet has HTTP and AMQP. If it does then add to layers string
+            packetInfo.layers = layers
             packetInfo.src_ip = inetToStr(ip.src)
             packetInfo.dst_ip = inetToStr(ip.dst)
             print('packet len --> ', ip.length)
-            packetInfo.size_bytes = ip.length
+            packetInfo.size_bytes = ip.len
             #TODO: mapping service and getting service id
             packetInfo.metering_id = self.meteringObj.metering_id
 
@@ -94,12 +97,12 @@ class TrafficAnalysis:
                 if timestamp < referenceTime:
                     print('ERROR!!! Packets are not sorted by timestamp')
                     break
-            ignored, packetInfo = buildPacketInfo(packetNumber, packet, packetTimestamp, referenceTime)
+            ignored, packetInfo = buildPacketInfo(packetNumber, packet, timestamp, referenceTime)
             if ignored:
                 ignoredPackets += 1
                 continue
             openSession.add(packetInfo)
-            openSession.commit()
+            # openSession.commit()
             packetNumber+= 1
-        # openSession.commit()
+        openSession.commit()
         openSession.close()

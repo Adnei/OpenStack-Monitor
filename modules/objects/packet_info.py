@@ -5,14 +5,15 @@ from sqlalchemy.orm import relationship as Relationship
 
 class PacketInfo(DB_INFO.BASE):
     __tablename__ = 'PacketInfo'
-    packet_number = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    packet_number = Column(Integer)
     sniff_timestamp = Column(String) #timestamp
     time = Column(String) #Absolute time between the current packet and the first packet (seconds)
     src_ip = Column(String)
     dst_ip = Column(String)
     src_port = Column(Integer)
     dst_port = Column(Integer)
-    #layers = Column(String) #Rest or RPC (?)
+    layers = Column(String) #Rest or RPC (?)
     #TODO: Identify AMQP packet
     size_bytes = Column(Integer) #Float (?)
     service_id = Column(Integer, ForeignKey('Service.service_id', ondelete='cascade'))
