@@ -9,32 +9,22 @@ from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
 import dpkt
-from modules.utils import *
-
-taLogger = logging.getLogger
+import modules.utils as UTILS
 
 class TrafficAnalysis:
     def __init__(self, meteringObj=None, pcapFile=None):
-        def getServices():
-            initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
-            openSession = initSession()
-            services = openSession.query(Service).all()
-            openSession.close()
-            return services
-
         if meteringObj is None:
             defaultLogger.error('ERROR: No Metering object provided!')
             return None
         if pcapFile is None:
-            initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
-            openSession = initSession()
+            openSession = DB_INFO.getOpenSession()
             operation = openSession.query(Operation).get(meteringObj.operation_id)
             openSession.close()
             pcapFile = operation.type.upper() + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
         self.pcapFile = pcapFile
         self.meteringObj = meteringObj
-        self.services = getServices()
+        self.services = UTILS.getServices()
 
     def printPyShark(self):
         captureFile = PyShark.FileCapture(self.pcapFile)
@@ -72,10 +62,11 @@ class TrafficAnalysis:
 
             #TODO: Find out if packet has HTTP and AMQP. If it does then add to layers string
             packetInfo.layers = layers
-            packetInfo.src_ip = inetToStr(ip.src)
-            packetInfo.dst_ip = inetToStr(ip.dst)
+            packetInfo.src_ip = UTILS.inetToStr(ip.src)
+            packetInfo.dst_ip = UTILS.inetToStr(ip.dst)
             packetInfo.size_bytes = ip.len
-            #TODO: mapping service and getting service id
+            matchingService = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.src_port))
+            packetInfo.service_id = matchingService.service_id
             packetInfo.metering_id = self.meteringObj.metering_id
 
             return (ignored, packetInfo)
@@ -83,8 +74,7 @@ class TrafficAnalysis:
         def buildApiInfo(packet, referenceTime):
             print('NOT YET')
 
-        initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
-        openSession = initSession()
+        openSession = DB_INFO.getOpenSession()
         packetNumber = 0
         referenceTime = 0
         ignoredPackets = 0
@@ -107,5 +97,4 @@ class TrafficAnalysis:
         openSession.commit()
         openSession.close()
 
-        #LOG ignoredPackets number
         return ignoredPackets

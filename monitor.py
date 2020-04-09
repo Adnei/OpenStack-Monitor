@@ -1,9 +1,17 @@
+# FIXME: These imports are really bad (all the way through the project).
+#    Avoid importing all ( * ) from a module. It makes the code confuse to read:
+#           *  "Where did this method came from ?"
+#           *  "I can't see where this variable is created"
+#    To avoid this kinda confusion you should specify the module you're importing shit from :)
+#    EX: import modules.utils as UTILS
+#    Then call a method from utils like this: UTILS.getServices() --> See? We know getServices came from UTILS :) (rpple)
 from modules.loggers import *
 from modules.network_meter import *
 from modules.induced_life_cycle import *
 from modules.objects import db_info as DB_INFO
 from modules.packet_analysis import *
 from modules.objects.service import *
+from modules.utils import *
 import time
 import sys, getopt
 
@@ -52,17 +60,11 @@ def main(argv):
     for idx in range(1,2): #Do N times
         instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
 
-    initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
-    openSession = initSession()
+    openSession = DB_INFO.getOpenSession()
     meteringList = openSession.query(Metering).all()
     openSession.close()
 
-    defaultServices = [ Service(serviceName=service) for service in [  'nova',
-                                                                'keystone',
-                                                                'swift',
-                                                                'glance',
-                                                                'cinder',
-                                                                'neutron' ]]
+    defaultServices = [ Service(serviceName=service) for service in list(SERVICES_MAP.keys())]
     openSession = initSession()
     openSession.add_all(defaultServices)
     openSession.commit()

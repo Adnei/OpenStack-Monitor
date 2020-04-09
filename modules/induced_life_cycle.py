@@ -52,8 +52,8 @@ class InstanceLifeCycleMetering:
         UTC_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
         START_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
         execution = Execution()
-        initSession = DB_INFO.SESSIONMAKER(bind=DB_INFO.ENGINE)
-        openSession = initSession()
+
+        openSession = DB_INFO.getOpenSession()
 
         openSession.add(execution)
         openSession.commit()#SQLAlchemy handles the ID auto increment

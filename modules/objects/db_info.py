@@ -6,3 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 ENGINE = create_engine('sqlite:///network_metering_experiment.db', echo="debug")
 BASE = declarative_base(bind=ENGINE)
 SESSIONMAKER = sessionmaker
+
+def getOpenSession():
+    initSession = SESSIONMAKER(bind=DB_INFO.ENGINE)
+    return initSession()
