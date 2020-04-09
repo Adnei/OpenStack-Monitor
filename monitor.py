@@ -65,7 +65,7 @@ def main(argv):
     openSession.close()
 
     defaultServices = [ Service(serviceName=service) for service in list(SERVICES_MAP.keys())]
-    openSession = initSession()
+    openSession = DB_INFO.getOpenSession()
     openSession.add_all(defaultServices)
     openSession.commit()
     openSession.close()

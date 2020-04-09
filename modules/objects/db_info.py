@@ -8,5 +8,5 @@ BASE = declarative_base(bind=ENGINE)
 SESSIONMAKER = sessionmaker
 
 def getOpenSession():
-    initSession = SESSIONMAKER(bind=DB_INFO.ENGINE)
+    initSession = SESSIONMAKER(bind=ENGINE)
     return initSession()

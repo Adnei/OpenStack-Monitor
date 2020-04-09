@@ -66,7 +66,8 @@ class TrafficAnalysis:
             packetInfo.dst_ip = UTILS.inetToStr(ip.dst)
             packetInfo.size_bytes = ip.len
             matchingService = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.src_port))
-            packetInfo.service_id = matchingService.service_id
+            if matchingService is not None:
+                packetInfo.service_id = matchingService.service_id
             packetInfo.metering_id = self.meteringObj.metering_id
 
             return (ignored, packetInfo)

@@ -1,5 +1,6 @@
 import socket
 from modules.objects import db_info as DB_INFO
+from modules.objects.service import *
 
 
 SERVICES_MAP = {
@@ -10,6 +11,15 @@ SERVICES_MAP = {
     'cinder': {3260, 8776},
     'neutron': {9696}
 }
+
+SERVICES_API_MAP = {
+        'nova': {8774},
+        'keystone': {5000, 35357},
+        'swift': {8080},
+        'glance': {9292},
+        'cinder': {8776},
+        'neutron': {9696},
+    }
 
 #Source: https://dpkt.readthedocs.io/en/latest/_modules/examples/print_packets.html
 def inetToStr(inet):
