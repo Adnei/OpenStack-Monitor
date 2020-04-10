@@ -8,9 +8,10 @@ class ApiInfo(DB_INFO.BASE):
     packet_info_id = Column(Integer, primary_key=True)
     src_port = Column(Integer)
     dst_port = Column(Integer)
-    type = Column(String) #Rest or RPC (?)
-    size_bytes = Column(Integer) #Float (?)
-    service_id = Column(Integer, ForeignKey('Service.service_id', ondelete='cascade'))
+    called = Column(Integer, ForeignKey('Service.service_id', ondelete='cascade'))
+    caller = Column(Integer, ForeignKey('Service.service_id', ondelete='cascade'))
+    method = Column(String)
+    size_bytes = Column(Integer)
     metering_id = Column(Integer, ForeignKey('Metering.metering_id', ondelete='cascade'))
 
     def __init__(self, serviceName=None):
