@@ -45,6 +45,29 @@ def inetToStr(inet):
         return socket.inet_ntop(socket.AF_INET6, inet)
 
 
+# Source: https://blog.bramp.net/post/2010/01/10/follow-http-stream-with-decompression/
+def tcpFlags(flags, dpkt):
+    ret = ''
+    if flags & dpkt.tcp.TH_FIN:
+        ret = ret + 'F'
+    if flags & dpkt.tcp.TH_SYN:
+        ret = ret + 'S'
+    if flags & dpkt.tcp.TH_RST:
+        ret = ret + 'R'
+    if flags & dpkt.tcp.TH_PUSH:
+        ret = ret + 'P'
+    if flags & dpkt.tcp.TH_ACK:
+        ret = ret + 'A'
+    if flags & dpkt.tcp.TH_URG:
+        ret = ret + 'U'
+    if flags & dpkt.tcp.TH_ECE:
+        ret = ret + 'E'
+    if flags & dpkt.tcp.TH_CWR:
+        ret = ret + 'C'
+
+    return ret
+
+
 def invertDict(dict):
         resultDict = {}
         for key in dict:

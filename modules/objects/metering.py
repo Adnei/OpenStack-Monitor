@@ -9,7 +9,7 @@ class Metering(DB_INFO.BASE):
     network_interface = Column(String, nullable=False)
     operation_id = Column(Integer, ForeignKey('Operation.operation_id', ondelete='cascade'))
     packet_info_list = Relationship('PacketInfo')
-    api_info_list = Relationship('ApiInfo')
+    
 
     def __init__(self, parentId=None, iface=None):
         if parentId is not None:
