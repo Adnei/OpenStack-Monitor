@@ -91,8 +91,8 @@ class TrafficAnalysis:
                 client = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.src_port))
                 if client is not None:
                     requestInfo.client_id = client.service_id
-
-                defaultLogger.info('Saved a request info for packet: ', packetInfo.packet_id)
+                #TODO: REMOVE this log
+                defaultLogger.info('Saved a request info for packet: ', str(packetInfo.packet_id))
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 pass
 
