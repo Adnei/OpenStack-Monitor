@@ -8,8 +8,8 @@ class Service(DB_INFO.BASE):
     __tablename__ = 'Service'
     service_id = Column(Integer, primary_key=True)
     service_name = Column(String)
-    caller_list = Relationship('RequestInfo', foreign_keys='RequestInfo.caller_id')
-    called_list = Relationship('RequestInfo', foreign_keys='RequestInfo.called_id')
+    caller_list = Relationship('RequestInfo', foreign_keys='RequestInfo.client_id')
+    called_list = Relationship('RequestInfo', foreign_keys='RequestInfo.server_id')
     packet_info_list = Relationship('PacketInfo')
 
 
