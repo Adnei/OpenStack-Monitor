@@ -2,13 +2,13 @@
 from modules.loggers import *
 import itertools
 import datetime
-import pyshark as PyShark
+import dpkt
 from modules.objects import db_info as DB_INFO
 from modules.objects.operation import *
 from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
-import dpkt
+from modules.objects.request_info import *
 import modules.utils as UTILS
 
 class TrafficAnalysis:
