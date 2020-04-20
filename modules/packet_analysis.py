@@ -50,7 +50,7 @@ class TrafficAnalysis:
             return (layerName, ip)
 
 
-        def savePacket(packetNumber, ipLayer, transportLayerTuple, referenceTime, openSession):
+        def savePacket(packetNumber, transportLayerTuple, packetTimestamp, referenceTime, openSession):
             if transportLayerTuple is None:
                 return None
             storeList = []
