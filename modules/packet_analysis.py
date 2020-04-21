@@ -52,7 +52,7 @@ class TrafficAnalysis:
 
         def savePacket(packetNumber, transportLayerTuple, packetTimestamp, referenceTime, openSession):
             if transportLayerTuple is None:
-                return None
+                return False
             storeList = []
             layers, ip = transportLayerTuple
             transportLayer = ip.data
@@ -122,12 +122,12 @@ class TrafficAnalysis:
 
                 transportLayerTuple = getTransportLayer(packet)
                 saved = savePacket(packetNumber, transportLayerTuple, timestamp, referenceTime, openSession)
+                packetNumber+= 1
                 if saved == False:
                     ignoredPackets += 1
                     continue
                 # openSession.add_all(packetInfo)
                 openSession.commit()
-                packetNumber+= 1
         openSession.commit()
         openSession.close()
 
