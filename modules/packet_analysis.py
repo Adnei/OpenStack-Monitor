@@ -61,8 +61,8 @@ class TrafficAnalysis:
             packetInfo.src_ip = UTILS.inetToStr(ip.src)
             packetInfo.dst_ip = UTILS.inetToStr(ip.dst)
             packetInfo.size_bytes = ip.len
-            packetInfo.sniff_timestamp = packetTimestamp
-            packetInfo.time = round(packetTimestamp - referenceTime, 6)
+            packetInfo.sniff_timestamp = str(packetTimestamp)
+            packetInfo.time = str(round(packetTimestamp - referenceTime, 6))
             packetInfo.src_port = transportLayer.sport
             packetInfo.dst_port = transportLayer.dport
             matchingService = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.src_port))
@@ -84,6 +84,9 @@ class TrafficAnalysis:
                 requestInfo = RequestInfo(packetId=packetInfo.packet_id)
                 requestInfo.method = request.method
                 requestInfo.user_agent = request.headers['user-agent']
+                requestInfo.uri = request.uri
+                requestInfo.http_version = request.version
+                requestInfo.connection = request.headers['connection']
 
                 server = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.dst_port))
                 if server is not None:

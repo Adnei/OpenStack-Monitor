@@ -8,6 +8,9 @@ class RequestInfo(DB_INFO.BASE):
     method = Column(String)
     user_agent = Column(String)
     packet_id = Column(Integer, ForeignKey('PacketInfo.packet_id', ondelete='cascade'))
+    uri = Column(String)
+    http_version = Column(String)
+    connection = Columnn(String)
     #OpenStack's services may act as Client - Server between themselves
     #Incase we don't know the port owner (service) then Client/Service will be None
     server_id = Column(Integer, ForeignKey('Service.service_id', ondelete='cascade'))
