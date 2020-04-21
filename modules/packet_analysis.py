@@ -92,6 +92,12 @@ class TrafficAnalysis:
                 if client is not None:
                     requestInfo.client_id = client.service_id
                 openSession.add(requestInfo)
+                #TODO:
+                #  How to find out an API call ?
+                # Client send SYN
+                # Server reply SYN ACK
+                # Client ACK
+                # Client PSH ACK --> Is it the Request ?
                 #TODO: REMOVE this log
                 defaultLogger.info('Saved a request info for packet: %s', str(packetInfo.packet_id))
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
