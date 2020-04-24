@@ -4,6 +4,7 @@ import datetime
 import dpkt
 from modules.objects import db_info as DB_INFO
 from modules.objects.os_image import *
+from modules.objects.execution import *
 from modules.objects.operation import *
 from modules.objects.metering import *
 from modules.objects.packet_info import *
@@ -19,7 +20,8 @@ class TrafficAnalysis:
         if pcapFile is None:
             openSession = DB_INFO.getOpenSession()
             operation = openSession.query(Operation).get(meteringObj.operation_id)
-            osImage = openSession.query(OsImage).get(operation.image_id)
+            execution = openSession.query(Execution).get(operation.exec_id)
+            osImage = openSession.query(OsImage).get(execution.image_id)
             openSession.close()
             pcapFile = operation.type.upper() + '_' + osImage.image_name + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
