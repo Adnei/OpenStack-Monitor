@@ -21,5 +21,3 @@ class Operation(DB_INFO.BASE):
     def __init__(self, parentId=None):
         if parentId is not None:
             self.exec_id = parentId
-
-# DB_INFO.BASE.metadata.create_all()

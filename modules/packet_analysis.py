@@ -3,6 +3,7 @@ import itertools
 import datetime
 import dpkt
 from modules.objects import db_info as DB_INFO
+from modules.objects.os_image import *
 from modules.objects.operation import *
 from modules.objects.metering import *
 from modules.objects.packet_info import *

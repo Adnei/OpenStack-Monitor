@@ -27,6 +27,3 @@ class PacketInfo(DB_INFO.BASE):
             self.service_name = serviceName
         if packetNumber is not None:
             self.packet_number= packetNumber
-
-
-# DB_INFO.BASE.metadata.create_all()

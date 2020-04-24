@@ -19,6 +19,3 @@ class RequestInfo(DB_INFO.BASE):
     def __init__(self, packetId=None):
         if packetId is not None:
             self.packet_id = packetId
-
-
-# DB_INFO.BASE.metadata.create_all()

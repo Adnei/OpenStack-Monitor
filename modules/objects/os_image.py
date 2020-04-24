@@ -15,6 +15,3 @@ class OsImage(DB_INFO.BASE):
     def __init__(self, serviceName=None):
         if serviceName is not None:
             self.service_name = serviceName
-
-
-# DB_INFO.BASE.metadata.create_all()

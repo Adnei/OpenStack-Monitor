@@ -16,5 +16,3 @@ class Metering(DB_INFO.BASE):
             self.operation_id = parentId
         if iface is not None:
             self.network_interface = iface
-
-# DB_INFO.BASE.metadata.create_all()
