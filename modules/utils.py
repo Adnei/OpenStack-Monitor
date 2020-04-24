@@ -92,7 +92,7 @@ def getPortMatchingService(services, servicesMap, matchPort):
     return resultService
 
 def createOsImage(imageInfoList):
-    openSession = DB_INFO.getOpenSession()
+    openSession = DB_INFO.getOpenSession(expire_on_commit=False)
     defaultImageFormat = 'qcow2'
     defaultImageContainer = 'bare'
     osImageList = []
@@ -116,3 +116,5 @@ def createOsImage(imageInfoList):
         osImageList.append(osImage)
 
     openSession.commit()
+    openSession.close()
+    return osImageList

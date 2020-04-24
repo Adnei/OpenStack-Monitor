@@ -46,7 +46,7 @@ def main(argv):
     meteringList = openSession.query(Metering).all()
     openSession.close()
 
-    defaultServices = [ Service(serviceName=service) for service in list(SERVICES_MAP.keys())]
+    defaultServices = [ Service(serviceName=service) for service in list(UTILS.SERVICES_MAP.keys())]
     openSession = DB_INFO.getOpenSession()
     openSession.add_all(defaultServices)
     openSession.commit()

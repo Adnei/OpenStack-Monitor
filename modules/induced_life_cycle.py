@@ -3,6 +3,7 @@ import time
 import itertools
 import calendar
 from datetime import datetime
+from sqlalchemy.orm.exc import NoResultFound
 from modules.openstack_utils import *
 from modules.network_meter import *
 
@@ -28,7 +29,7 @@ class InstanceLifeCycleMetering:
             try:
                 imageInfo = openSession.query(OsImage).first()
                 openSession.close()
-            except NoResultFound, err:
+            except (NoResultFound, err):
                 defaultLogger.error("Please, create at least one OsImage object")
 
         self.imageInfo = imageInfo
@@ -58,7 +59,7 @@ class InstanceLifeCycleMetering:
 
         UTC_TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
         START_TIME_FORMAT = '%Y-%m-%dT%H:%M:%S.%f'
-        execution = Execution()
+        execution = Execution(imageId=self.imageInfo.image_id)
 
         openSession = DB_INFO.getOpenSession()
 
@@ -78,8 +79,9 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('operation: %s started\n', operationObject['operation'])
             operation = Operation()
             operation.exec_id = execution.exec_id
+            osImage = openSession.query(OsImage).get(execution.image_id)
             operation.type = operationObject['operation'].upper()
-            startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + str(execution.exec_id) + '_')
+            startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id) + '_')
             operation.metering_start = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
             if operationObject['operation'].upper() == 'CREATE':
