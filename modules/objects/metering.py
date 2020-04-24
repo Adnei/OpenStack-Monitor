@@ -9,7 +9,7 @@ class Metering(DB_INFO.BASE):
     network_interface = Column(String, nullable=False)
     operation_id = Column(Integer, ForeignKey('Operation.operation_id', ondelete='cascade'))
     packet_info_list = Relationship('PacketInfo')
-    
+
 
     def __init__(self, parentId=None, iface=None):
         if parentId is not None:
@@ -17,4 +17,4 @@ class Metering(DB_INFO.BASE):
         if iface is not None:
             self.network_interface = iface
 
-DB_INFO.BASE.metadata.create_all()
+# DB_INFO.BASE.metadata.create_all()

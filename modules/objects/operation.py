@@ -22,4 +22,4 @@ class Operation(DB_INFO.BASE):
         if parentId is not None:
             self.exec_id = parentId
 
-DB_INFO.BASE.metadata.create_all()
+# DB_INFO.BASE.metadata.create_all()

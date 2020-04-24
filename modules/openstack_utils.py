@@ -7,6 +7,7 @@ from keystoneauth1 import session as keystoneSession
 from glanceclient import Client as glanceClient
 from neutronclient.v2_0 import client as neutronClient
 from troveclient.v1 import client as troveClient
+from modules.objects.os_image import *
 
 #@TODO: proper indent too long lines
 
@@ -36,13 +37,13 @@ class OpenStackUtils:
             }
         return keystoneSession.Session(auth=v3.Password(**authInfo))
 
-    def createImage(self, data={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
-        'imageName':'fedora31', 'imageFormat':'qcow2',
-        'imageContainer':'bare'}):
-        image = self.glance.images.create(name=data['imageName'],
-            container_format=data['imageContainer'],
-            disk_format=data['imageFormat'])
-        self.glance.images.upload(image.id, open(data['imagePath'],'rb'))
+    def createImage(self, imageInfo=None):
+        if not isinstance(imageInfo, OsImage):
+            return None
+        image = self.glance.images.create(name=imageInfo.image_name,
+            container_format=imageInfo.image_container,
+            disk_format=imageInfo.image_format)
+        self.glance.images.upload(image.id, open(imageInfo.file_path,'rb'))
         return image
 
     def deleteImage(self, imageRef):

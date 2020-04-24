@@ -1,15 +1,13 @@
- #API Calls will no longer exists
 from modules.objects import db_info as DB_INFO
 from sqlalchemy import Column, Integer, Unicode, UnicodeText, String, ForeignKey
 from sqlalchemy.orm import relationship as Relationship
-
 
 class Service(DB_INFO.BASE):
     __tablename__ = 'Service'
     service_id = Column(Integer, primary_key=True)
     service_name = Column(String)
-    caller_list = Relationship('RequestInfo', foreign_keys='RequestInfo.client_id')
-    called_list = Relationship('RequestInfo', foreign_keys='RequestInfo.server_id')
+    client_list = Relationship('RequestInfo', foreign_keys='RequestInfo.client_id')
+    server_list = Relationship('RequestInfo', foreign_keys='RequestInfo.server_id')
     packet_info_list = Relationship('PacketInfo')
 
 
@@ -18,4 +16,4 @@ class Service(DB_INFO.BASE):
             self.service_name = serviceName
 
 
-DB_INFO.BASE.metadata.create_all()
+# DB_INFO.BASE.metadata.create_all()

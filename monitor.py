@@ -1,3 +1,7 @@
+import vm_operation as VM_OPERATION
+from modules.schema_loader import *
+import modules.utils as UTILS
+
 # FIXME: These imports are really bad (all the way through the project).
 #    Avoid importing all ( * ) from a module. It makes the code confuse to read:
 #           *  "Where did this method came from ?"
@@ -6,17 +10,15 @@
 #    EX: import modules.utils as UTILS
 #    Then call a method from utils like this: UTILS.getServices() --> See? We know getServices came from UTILS :) (rpple)
 from modules.loggers import *
+# from modules.objects.os_image import *
 from modules.network_meter import *
 from modules.induced_life_cycle import *
-from modules.objects import db_info as DB_INFO
+# from modules.objects import db_info as DB_INFO
 from modules.packet_analysis import *
-from modules.objects.service import *
-from modules.utils import *
+# from modules.objects.service import *
+
 import time
 import sys, getopt
-
-
-#@TODO: proper indent too long lines
 
 def main(argv):
 
@@ -24,41 +26,21 @@ def main(argv):
     #   FIX argv PARAMETERS
     #   Parameterize NICs, file names, number of execution and image infos
 
-    operationObjectList = [
+    osList = UTILS.createOsImage([
         {
-            'operation':'CREATE',
-            'targetStatus':'ACTIVE',
-            'requiredStatus':['BUILD'], #Note: OpenStack should refactor this status to INITIALIZE
-            'params':{'flavor':'m1.small'}
-        },
-        {
-            'operation':'SUSPEND',
-            'targetStatus':'SUSPENDED',
-            'requiredStatus':['ACTIVE','SHUTOFF'],
-            'anonymousFunction':lambda instance: instance.suspend()
-        },
-        {
-            'operation':'RESUME',
-            'targetStatus':'ACTIVE',
-            'requiredStatus':['SUSPENDED'],
-            'anonymousFunction':lambda instance: instance.resume()
-        },
-        {
-            'operation':'STOP',
-            'targetStatus':'SHUTOFF', #STOPPED
-            'requiredStatus':['ACTIVE','SHUTOFF', 'RESCUED'],
-            'anonymousFunction':lambda instance: instance.stop()
-        },
-        {
-            'operation':'SHELVE',
-            'targetStatus':'SHELVED_OFFLOADED',
-            'requiredStatus':['ACTIVE', 'SHUTOFF', 'SUSPENDED'],
-            'anonymousFunction':lambda instance: instance.shelve()
+            'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+            'imageName':'fedora31'
         }
-    ]
-    instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv)
-    for idx in range(1,2): #Do N times
-        instanceLifeCycleMetering.startInducedLifeCycle(operationObjectList)
+    ])
+
+    if osList is None:
+        defaultLogger.critical('Aborting! Impossible to create VMs. No images')
+        return None
+
+    for osImage in osList:
+        instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv, imageInfo=osImage)
+        for idx in range(1,2): #Do N times
+            instanceLifeCycleMetering.startInducedLifeCycle(VM_OPERATION.operationObjectList)
 
     openSession = DB_INFO.getOpenSession()
     meteringList = openSession.query(Metering).all()
@@ -79,4 +61,5 @@ def main(argv):
         defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    #NICS
+    main(sys.argv[1:])

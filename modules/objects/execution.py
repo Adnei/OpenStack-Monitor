@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship as Relationship
 class Execution(DB_INFO.BASE):
     __tablename__ = 'Execution'
     exec_id = Column(Integer, primary_key=True)
+    image_id = Column(Integer, ForeignKey('OsImage.image_id', ondelete='cascade'))
     operations = Relationship('Operation')
 
-DB_INFO.BASE.metadata.create_all()
+# DB_INFO.BASE.metadata.create_all()

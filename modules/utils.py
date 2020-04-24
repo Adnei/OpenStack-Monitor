@@ -1,6 +1,8 @@
 import socket
+from modules.loggers import *
 from modules.objects import db_info as DB_INFO
 from modules.objects.service import *
+from modules.objects.os_image import *
 
 #https://docs.openstack.org/mitaka/config-reference/firewalls-default-ports.html
 #https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/10/html/firewall_rules_for_red_hat_openstack_platform/index
@@ -88,3 +90,29 @@ def getPortMatchingService(services, servicesMap, matchPort):
     serviceName = portServicesMap[matchPort]
     resultService = [service for service in services if service.service_name == serviceName][0]
     return resultService
+
+def createOsImage(imageInfoList):
+    openSession = DB_INFO.getOpenSession()
+    defaultImageFormat = 'qcow2'
+    defaultImageContainer = 'bare'
+    osImageList = []
+    for imageInfo in imageInfoList:
+        if 'imagePath' not in imageInfo or 'imageName' not in imageInfo:
+            defaultLogger.error('ERROR: Need image file path and image name')
+            # openSession.rollback()
+            openSession.close()
+            return None
+
+        osImage = OsImage()
+        osImage.file_path = imageInfo['imagePath']
+        osImage.image_name = imageInfo['imageName']
+        osImage.image_format = defaultImageFormat
+        if 'imageFormat' in imageInfo:
+            osImage.image_format = imageInfo['imageFormat']
+        osImage.image_container = defaultImageContainer
+        if 'imageContainer' in imageInfo:
+            osImage.image_container = imageInfo['imageContainer']
+        openSession.add(osImage)
+        osImageList.append(osImage)
+
+    openSession.commit()

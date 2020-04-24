@@ -29,4 +29,4 @@ class PacketInfo(DB_INFO.BASE):
             self.packet_number= packetNumber
 
 
-DB_INFO.BASE.metadata.create_all()
+# DB_INFO.BASE.metadata.create_all()

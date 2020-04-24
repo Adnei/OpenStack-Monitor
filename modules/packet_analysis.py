@@ -1,4 +1,3 @@
-# import logging
 from modules.loggers import *
 import itertools
 import datetime
@@ -19,8 +18,9 @@ class TrafficAnalysis:
         if pcapFile is None:
             openSession = DB_INFO.getOpenSession()
             operation = openSession.query(Operation).get(meteringObj.operation_id)
+            osImage = openSession.query(OsImage).get(operation.image_id)
             openSession.close()
-            pcapFile = operation.type.upper() + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
+            pcapFile = operation.type.upper() + '_' + osImage.image_name + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
         self.pcapFile = pcapFile
         self.meteringObj = meteringObj
@@ -75,7 +75,8 @@ class TrafficAnalysis:
                 packetInfo.tcp_flags = UTILS.tcpFlags(transportLayer.flags, dpkt)
             packetInfo.layers = layers
             openSession.add(packetInfo)
-
+            #TODO: Store responses
+            # Ex.: https://programtalk.com/python-examples/dpkt.http.Response/
             try:
                 request = dpkt.http.Request(transportLayer.data)
                 layers += ' http'

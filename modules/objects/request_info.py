@@ -21,4 +21,4 @@ class RequestInfo(DB_INFO.BASE):
             self.packet_id = packetId
 
 
-DB_INFO.BASE.metadata.create_all()
+# DB_INFO.BASE.metadata.create_all()

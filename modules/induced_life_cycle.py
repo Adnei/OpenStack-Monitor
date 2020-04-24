@@ -6,10 +6,9 @@ from datetime import datetime
 from modules.openstack_utils import *
 from modules.network_meter import *
 
-#FIX Object imports
+#FIXME: Fix Object imports
 #Objects must be imported somewhere else before induced life cycle starts
 #Objects must be created at DB beforehand
-''
 from modules.objects import db_info
 from modules.objects.execution import *
 from modules.objects.operation import *
@@ -17,24 +16,32 @@ from modules.objects.metering import *
 from modules.objects.service import *
 from modules.objects.packet_info import *
 from modules.objects.request_info import *
+from modules.objects.os_image import *
 from modules.objects import db_info as DB_INFO
 #@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
     autoId = itertools.count()
-    def __init__(self, ifaceList=['lo'], imageInfo={'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
-                    'imageName':'fedora31',
-                    'imageFormat':'qcow2',
-                    'imageContainer':'bare'}                         ):
+    def __init__(self, ifaceList=['lo'], imageInfo=None):
+        if imageInfo is None:
+            openSession = DB_INFO.getOpenSession()
+            try:
+                imageInfo = openSession.query(OsImage).first()
+                openSession.close()
+            except NoResultFound, err:
+                defaultLogger.error("Please, create at least one OsImage object")
+
         self.imageInfo = imageInfo
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
 
-
     def prepareLifeCycleScenario(self, imageInfo):
+        if not isinstance(imageInfo, OsImage):
+            return (None,None)
+
         #create image and network
-        cachedImage = self.openStackUtils.getImageByName(imageInfo['imageName'])
+        cachedImage = self.openStackUtils.getImageByName(imageInfo.image_name)
         if cachedImage is None:
             defaultLogger.warning('Image cache is disabled!')
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
