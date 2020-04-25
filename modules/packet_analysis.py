@@ -87,10 +87,14 @@ class TrafficAnalysis:
                 openSession.flush()
                 requestInfo = RequestInfo(packetId=packetInfo.packet_id)
                 requestInfo.method = request.method
-                requestInfo.user_agent = request.headers['user-agent']
+                requestInfo.user_agent = 'NO-USER-AGENT'
+                if 'user-agent' in request.headers:
+                    requestInfo.user_agent = request.headers['user-agent']
                 requestInfo.uri = request.uri
                 requestInfo.http_version = request.version
-                requestInfo.connection = request.headers['connection']
+                requestInfo.connection = 'NO-CONNECTION-FLAG'
+                if 'connection' in request.headers:
+                    requestInfo.connection = request.headers['connection']
 
                 server = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.dst_port))
                 if server is not None:
