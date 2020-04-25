@@ -143,20 +143,3 @@ class TrafficAnalysis:
         openSession.close()
 
         return ignoredPackets
-
-
-
-
-
-#         for ts, pkt in dpktPcap:
-# ...     _ts = ts
-# ...     packet = pkt
-# ...     ethLayer = dpkt.ethernet.Ethernet(pkt)
-# ...     if not isinstance(ethLayer.data, dpkt.ip.IP):
-# ...             continue
-# ...     ip = ethLayer.data
-# ...     if ip.p == dpkt.ip.IP_PROTO_TCP:
-# ...             TCP = ip.data
-# ...             if TCP.dport == 9292 and len(TCP.data) > 0:
-# ...                     http = dpkt.http.Request(TCP.data)
-# ...                     break
