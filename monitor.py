@@ -43,23 +43,23 @@ def main(argv):
             'imagePath':'CentOS-7-x86_64-GenericCloud.qcow2',
             'imageName':'centos7_light'
         },
-        {
-            'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
-            'imageName':'centos7'
-        },
-        {
-            'imagePath':'debian-10-openstack-amd64.qcow2',
-            'imageName':'debian10_qcow2'
-        },
+        # {
+        #     'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
+        #     'imageName':'centos7'
+        # },
+        # {
+        #     'imagePath':'debian-10-openstack-amd64.qcow2',
+        #     'imageName':'debian10_qcow2'
+        # },
         {
             'imagePath':'cirros-0.4.0-aarch64-disk.img',
             'imageName':'cirros'
-        },
-        {
-            'imagePath':'debian-10-openstack-amd64.raw',
-            'imageName':'debian10_raw',
-            'imageFormat': 'raw'
-        }
+        }#,
+        # {
+        #     'imagePath':'debian-10-openstack-amd64.raw',
+        #     'imageName':'debian10_raw',
+        #     'imageFormat': 'raw'
+        # }
     ])
 
     if osList is None:
@@ -90,7 +90,10 @@ def main(argv):
         #
         # FIXME: Log ignored packets from which analysis --> report which execution, operation, etc...
         #       Need detailed info
-        defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
+        if ignoredPackets > 0:
+            defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
+        else:
+            defaultLogger.info('Ignored packtes %s', str(ignoredPacketsCounter))
 
 if __name__ == "__main__":
     #NICS

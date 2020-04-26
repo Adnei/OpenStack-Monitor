@@ -1,4 +1,5 @@
 import socket
+import dpkt
 from modules.loggers import *
 from modules.objects import db_info as DB_INFO
 from modules.objects.service import *
@@ -48,7 +49,7 @@ def inetToStr(inet):
 
 
 # Source: https://blog.bramp.net/post/2010/01/10/follow-http-stream-with-decompression/
-def tcpFlags(flags, dpkt):
+def tcpFlags(flags):
     ret = ''
     if flags & dpkt.tcp.TH_FIN:
         ret = ret + 'F'
@@ -118,3 +119,14 @@ def createOsImage(imageInfoList):
     openSession.commit()
     openSession.close()
     return osImageList
+
+def getLowerTimestamp(pcapPath):
+    count = 0
+    smallest = 0
+    with open(pcapPath, 'rb') as pcapFile:
+        dpktPcap = dpkt.pcap.Reader(pcapPath)
+        for timestamp, __ in dpktPcap:
+            if count == 0 or timestamp < smallest:
+                smallest = timestamp
+            count += 1
+    return smallest

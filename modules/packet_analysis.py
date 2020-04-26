@@ -73,9 +73,7 @@ class TrafficAnalysis:
                 packetInfo.service_id = matchingService.service_id
             packetInfo.metering_id = self.meteringObj.metering_id
             if 'tcp' in layers:
-                #FIXME Not sure if passing dpkt as parameter is the best option
-                #Should have a look about which is the best approach: importing dpk (inside utils module) or passing by parameter
-                packetInfo.tcp_flags = UTILS.tcpFlags(transportLayer.flags, dpkt)
+                packetInfo.tcp_flags = UTILS.tcpFlags(transportLayer.flags)
             packetInfo.layers = layers
             openSession.add(packetInfo)
             #TODO: Store responses
@@ -119,26 +117,24 @@ class TrafficAnalysis:
 
         openSession = DB_INFO.getOpenSession()
         packetNumber = 0
-        referenceTime = 0
+        referenceTime = UTILS.getSmallestTimestamp(self.pcapFile)
         ignoredPackets = 0
         with open(self.pcapFile, 'rb') as pcapFile:
             dpktPcap = dpkt.pcap.Reader(pcapFile)
-            for timestamp, packet in dpktPcap:
-                if packetNumber == 0:
-                    referenceTime = timestamp
-                else: #It's not necessary, but just to make sure it's sorted by timestamp
-                    if timestamp < referenceTime:
-                        defaultLogger.error('ERROR!!! Packets are not sorted by timestamp')
-                        break
-
-                transportLayerTuple = getTransportLayer(packet)
-                saved = savePacket(packetNumber, transportLayerTuple, timestamp, referenceTime, openSession)
-                packetNumber+= 1
-                if saved == False:
-                    ignoredPackets += 1
-                    continue
-                # openSession.add_all(packetInfo)
-                openSession.commit()
+            try:
+                for timestamp, packet in dpktPcap:
+                    if timestamp > referenceTime:
+                        raise ValueError('Reference time is not the smallest one')
+                    transportLayerTuple = getTransportLayer(packet)
+                    saved = savePacket(packetNumber, transportLayerTuple, timestamp, referenceTime, openSession)
+                    packetNumber+= 1
+                    if saved == False:
+                        ignoredPackets += 1
+                        continue
+                    openSession.commit()
+            except ValueError as error:
+                defaultLogger.error(error)
+                raise
         openSession.commit()
         openSession.close()
 
