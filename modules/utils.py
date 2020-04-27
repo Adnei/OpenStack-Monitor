@@ -124,7 +124,7 @@ def getSmallestTimestamp(pcapPath):
     count = 0
     smallest = 0
     with open(pcapPath, 'rb') as pcapFile:
-        dpktPcap = dpkt.pcap.Reader(pcapPath)
+        dpktPcap = dpkt.pcap.Reader(pcapFile)
         for timestamp, __ in dpktPcap:
             if count == 0 or timestamp < smallest:
                 smallest = timestamp
