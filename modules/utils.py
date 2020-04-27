@@ -120,7 +120,7 @@ def createOsImage(imageInfoList):
     openSession.close()
     return osImageList
 
-def getLowerTimestamp(pcapPath):
+def getSmallestTimestamp(pcapPath):
     count = 0
     smallest = 0
     with open(pcapPath, 'rb') as pcapFile:
