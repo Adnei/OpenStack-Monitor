@@ -26,7 +26,7 @@ operationObjectList = [
     {
         'operation':'SHELVE',
         'targetStatus':'SHELVED_OFFLOADED',
-        'requiredStatus':['ACTIVE', 'SHUTOFF', 'SUSPENDED'],
+        'requiredStatus':['ACTIVE', 'SHUTOFF', 'SUSPENDED', 'STOPPED'],
         'anonymousFunction':lambda instance: instance.shelve()
     }
 ]

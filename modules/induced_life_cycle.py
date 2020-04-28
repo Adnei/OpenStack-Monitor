@@ -84,26 +84,28 @@ class InstanceLifeCycleMetering:
             startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id) + '_')
             operation.metering_start = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
-            if operationObject['operation'].upper() == 'CREATE':
-                instanceServer = self.openStackUtils.createInstance('instanceServer',
-                                self.instanceImage, operationObject['params']['flavor'], self.nics)
-            else:
-                if instanceServer.status.upper() in operationObject['requiredStatus']:
-                    defaultLogger.info('called anonymousFunction!\n')
-                    operationObject['anonymousFunction'](instanceServer)
+            try:
+                if operationObject['operation'].upper() == 'CREATE':
+                    instanceServer = self.openStackUtils.createInstance('instanceServer',
+                                    self.instanceImage, operationObject['params']['flavor'], self.nics)
                 else:
-                    defaultLogger.error('instanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
-                    defaultLogger.error('You cannot make a server status move from %s to %s\n', instanceServer.status.upper(), operationObject['targetStatus'])
-                    networkMeter.stopPacketCapture()
-                    return None
-            while instanceServer.status != operationObject['targetStatus']:
-                if instanceServer.status.upper() == 'ERROR':
-                    defaultLogger.error('Server status: ERROR')
-                    defaultLogger.error('Aborting\n')
-                    networkMeter.stopPacketCapture()
-                    return None
-                instanceServer.get()
-                time.sleep(1)
+                    if instanceServer.status.upper() in operationObject['requiredStatus']:
+                        defaultLogger.info('called anonymousFunction!\n')
+                        operationObject['anonymousFunction'](instanceServer)
+                    else:
+                        defaultLogger.error('instanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
+                        defaultLogger.error('You cannot make a server status move from %s to %s\n', instanceServer.status.upper(), operationObject['targetStatus'])
+                        networkMeter.stopPacketCapture()
+                        return None
+                while instanceServer.status != operationObject['targetStatus']:
+                    if instanceServer.status.upper() == 'ERROR':
+                        networkMeter.stopPacketCapture()
+                        raise ValueError('Server status: ERROR. Aborting! Delete the instances and restart')
+                    instanceServer.get()
+                    time.sleep(1)
+            except ValueError as error:
+                defaultLogger.error(error)
+                raise
             finishTimestamp = networkMeter.stopPacketCapture()
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
