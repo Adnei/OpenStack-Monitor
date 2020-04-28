@@ -123,7 +123,7 @@ class TrafficAnalysis:
             dpktPcap = dpkt.pcap.Reader(pcapFile)
             try:
                 for timestamp, packet in dpktPcap:
-                    if timestamp > referenceTime:
+                    if timestamp < referenceTime:
                         raise ValueError('Reference time is not the smallest one')
                     transportLayerTuple = getTransportLayer(packet)
                     saved = savePacket(packetNumber, transportLayerTuple, timestamp, referenceTime, openSession)
