@@ -90,7 +90,7 @@ def main(argv):
         #
         # FIXME: Log ignored packets from which analysis --> report which execution, operation, etc...
         #       Need detailed info
-        if ignoredPackets > 0:
+        if ignoredPacketsCounter > 0:
             defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
         else:
             defaultLogger.info('Ignored packtes %s', str(ignoredPacketsCounter))
