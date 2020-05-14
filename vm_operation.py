@@ -9,24 +9,24 @@ operationObjectList = [
         'operation':'SUSPEND',
         'targetStatus':'SUSPENDED',
         'requiredStatus':['ACTIVE','SHUTOFF'],
-        'anonymousFunction':lambda instance: instance.suspend()
+        'anonymousFunction':lambda compute, server: compute.suspend_server(server)
     },
     {
         'operation':'RESUME',
         'targetStatus':'ACTIVE',
         'requiredStatus':['SUSPENDED'],
-        'anonymousFunction':lambda instance: instance.resume()
+        'anonymousFunction':lambda compute, server: compute.resume_server(server)
     },
     {
         'operation':'STOP',
         'targetStatus':'SHUTOFF', #STOPPED
         'requiredStatus':['ACTIVE','SHUTOFF', 'RESCUED'],
-        'anonymousFunction':lambda instance: instance.stop()
+        'anonymousFunction':lambda compute, server: compute.stop_server(server)
     },
     {
         'operation':'SHELVE',
         'targetStatus':'SHELVED_OFFLOADED',
         'requiredStatus':['ACTIVE', 'SHUTOFF', 'SUSPENDED', 'STOPPED'],
-        'anonymousFunction':lambda instance: instance.shelve()
+        'anonymousFunction':lambda compute, server: compute.shelve_server(server)
     }
 ]

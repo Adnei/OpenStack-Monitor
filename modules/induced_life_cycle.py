@@ -90,17 +90,17 @@ class InstanceLifeCycleMetering:
             try:
                 if operationObject['operation'].upper() == 'CREATE':
                     instanceServer = self.openStackUtils.createInstance('instanceServer',
-                                    self.instanceImage, operationObject['params']['flavor'], self.nics)
+                                    self.instanceImage, operationObject['params']['flavor'], self.nics, computeType=True)
                 else:
                     if instanceServer.status.upper() in operationObject['requiredStatus']:
                         defaultLogger.info('called anonymousFunction!\n')
-                        operationObject['anonymousFunction'](instanceServer)
+                        operationObject['anonymousFunction'](self.openStackUtils.openstackConn.compute, instanceServer)
                     else:
                         defaultLogger.error('instanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
                         defaultLogger.error('You cannot make a server status move from %s to %s\n', instanceServer.status.upper(), operationObject['targetStatus'])
                         networkMeter.stopPacketCapture()
                         return None
-                self.openStackUtils.openstackConn.compute.wait_for_server(instanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
+                instanceServer = self.openStackUtils.openstackConn.compute.wait_for_server(instanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
             except ValueError as error:
                 defaultLogger.error(error)
                 raise

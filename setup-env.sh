@@ -12,4 +12,7 @@ wget https://download.cirros-cloud.net/0.4.0/cirros-0.4.0-aarch64-disk.img; # 15
 wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1707.qcow2; # 1.3 GB
 wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2; #898 MB
 
-#TODO script to find out administrative vlan
+source /root/setup/info.mgmt
+
+VLAN=${MGMT_NETWORK_INTERFACE}
+echo 'VLAN=${MGMT_NETWORK_INTERFACE}'

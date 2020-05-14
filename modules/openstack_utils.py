@@ -52,12 +52,15 @@ class OpenStackUtils:
         #not sure if it returns anything
         return self.glance.images.delete(imageRef.id)
 
-    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', nics=None):
+    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', nics=None, computeType=False):
         if nics is None:
             nics = 'none'
         novaFlavor = self.nova.flavors.find(name=flavorName)
 
-        return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=nics)
+        if compute:
+            return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=nics)
+        else:
+            return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=nics)
 
     # Workaround, since documentation doesn't provide enough information about a get operation by image name
     # @TODO: Refactor ASAP
