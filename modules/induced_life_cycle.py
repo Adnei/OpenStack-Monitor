@@ -50,7 +50,7 @@ class InstanceLifeCycleMetering:
 
         return (self.instanceImage, self.networkId)
 
-    def startInducedLifeCycle(self, operationObjectList, caching=False):
+    def startInducedLifeCycle(self, operationObjectList, imageCaching=False):
         #
         # FIXME: Should delete all created instances before induced_life_cycle starts
         #
@@ -70,9 +70,8 @@ class InstanceLifeCycleMetering:
         openSession.commit()#SQLAlchemy handles the ID auto increment
 
         fileList = [iface+'.pcap' for iface in self.ifaceList]
-        instanceServer = None
+        computeInstanceServer = None
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
-        #Other infos about instanceServer -> instanceServer._info['OS-EXT-STS:vm_state']
 
         #
         # INDUCED LIFE CYCLE LOGIC
@@ -87,59 +86,61 @@ class InstanceLifeCycleMetering:
             startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id) + '_')
             operation.metering_start = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
+
             try:
                 if operationObject['operation'].upper() == 'CREATE':
-                    instanceServer = self.openStackUtils.createInstance('instanceServer',
+                    computeInstanceServer = self.openStackUtils.createInstance('computeInstanceServer',
                                     self.instanceImage, operationObject['params']['flavor'], self.networkId, computeType=True)
                 else:
-                    if instanceServer.status.upper() in operationObject['requiredStatus']:
+                    if computeInstanceServer.status.upper() in operationObject['requiredStatus']:
                         defaultLogger.info('called anonymousFunction!\n')
-                        operationObject['anonymousFunction'](self.openStackUtils.openstackConn.compute, instanceServer)
+                        operationObject['anonymousFunction'](self.openStackUtils.openstackConn.compute, computeInstanceServer)
                     else:
-                        defaultLogger.error('instanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
-                        defaultLogger.error('You cannot make a server status move from %s to %s\n', instanceServer.status.upper(), operationObject['targetStatus'])
+                        defaultLogger.error('computeInstanceServer\'s current status is not a required status for %s', operationObject['targetStatus'])
+                        defaultLogger.error('You cannot make a server status move from %s to %s\n', computeInstanceServer.status.upper(), operationObject['targetStatus'])
                         networkMeter.stopPacketCapture()
                         return None
-                instanceServer = self.openStackUtils.openstackConn.compute.wait_for_server(instanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
+                computeInstanceServer = self.openStackUtils.openstackConn.compute.wait_for_server(computeInstanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
             except ValueError as error:
                 defaultLogger.error(error)
                 raise
+
             finishTimestamp = networkMeter.stopPacketCapture()
+            operation.metering_finish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
-            #
-            # Fulfilling objects for data persistence
-            #
+            novaServer = self.openStackUtils.nova.servers.get(computeInstanceServer.id)
+            self.persistOperationMetering(operation, novaServer, START_TIME_FORMAT, UTC_TIME_FORMAT)
 
-            operation.metering_finish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
-            #getDatetimeFromTimestamp = datetime.fromtimestamp(operation.metering_finish.timestamp()) # Use fromtimestamp instead of utcfromtimestamp
-            actionReq = list(filter(lambda actionReq: actionReq.action.upper() == operationObject['operation'].upper(),
-                self.openStackUtils.instanceAction.list(instanceServer)))[0]
-            operation.openstack_info_start = datetime.strptime(actionReq.start_time, START_TIME_FORMAT).timestamp()
-            operation.openstack_info_finish = datetime.strptime(instanceServer.updated,UTC_TIME_FORMAT).timestamp()
-            operation.metering_duration = operation.metering_finish - operation.metering_start
-            operation.openstack_info_duration = operation.openstack_info_finish - operation.openstack_info_start
-
-            if operation.metering_finish < operation.openstack_info_finish:
-                defaultLogger.error('ERROR: Network Meter stopped before the operation finished')
-                return None
-            if operation.metering_start > operation.openstack_info_start:
-                defaultLogger.error('ERROR: Network Meter started after the operation started')
-                return None
-
-
-            openSession.add(operation)
-            openSession.flush()
-            [
-                openSession.add(
-                    Metering(parentId=operation.operation_id, iface=iface)
-                )
-                for iface in self.ifaceList
-            ]
-
-        openSession.commit()
-        openSession.close()
-        instanceServer.force_delete()
-        if not caching:
+        novaServer.force_delete()
+        if not imageCaching:
             self.openStackUtils.deleteImage(self.instanceImage)
             self.instanceImage = None
+        openSession.close()
+
+
+    def persistOperationMetering(self, operation, novaServer, START_TIME_FORMAT, UTC_TIME_FORMAT ):
+        openSession = DB_INFO.getOpenSession()
+
+        actionReq = list(filter(lambda actionReq: actionReq.action.upper() == operationObject['operation'].upper(),
+            self.openStackUtils.instanceAction.list(novaServer)))[0]
+        operation.openstack_info_start = datetime.strptime(actionReq.start_time, START_TIME_FORMAT).timestamp()
+        operation.openstack_info_finish = datetime.strptime(novaServer.updated, UTC_TIME_FORMAT).timestamp()
+        operation.metering_duration = operation.metering_finish - operation.metering_start
+        operation.openstack_info_duration = operation.openstack_info_finish - operation.openstack_info_start
+        if operation.metering_finish < operation.openstack_info_finish:
+            defaultLogger.error('ERROR: Network Meter stopped before the operation finished')
+            return None
+        if operation.metering_start > operation.openstack_info_start:
+            defaultLogger.error('ERROR: Network Meter started after the operation started')
+            return None
+        openSession.add(operation)
+        openSession.flush()
+        [
+            openSession.add(
+                Metering(parentId=operation.operation_id, iface=iface)
+            )
+            for iface in self.ifaceList
+        ]
+        openSession.commit()
+        openSession.close()
