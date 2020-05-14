@@ -110,7 +110,7 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
             novaServer = self.openStackUtils.nova.servers.get(computeInstanceServer.id)
-            self.persistOperationMetering(operation, novaServer, START_TIME_FORMAT, UTC_TIME_FORMAT)
+            self.persistOperationMetering(operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
 
         novaServer.force_delete()
         if not imageCaching:
@@ -119,7 +119,7 @@ class InstanceLifeCycleMetering:
         openSession.close()
 
 
-    def persistOperationMetering(self, operation, novaServer, START_TIME_FORMAT, UTC_TIME_FORMAT ):
+    def persistOperationMetering(self, operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
         openSession = DB_INFO.getOpenSession()
 
         actionReq = list(filter(lambda actionReq: actionReq.action.upper() == operationObject['operation'].upper(),
