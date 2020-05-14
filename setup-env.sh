@@ -15,4 +15,4 @@ wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2;
 source /root/setup/info.mgmt
 
 VLAN=${MGMT_NETWORK_INTERFACE}
-echo 'VLAN=${MGMT_NETWORK_INTERFACE}'
+echo "VLAN=${MGMT_NETWORK_INTERFACE}"

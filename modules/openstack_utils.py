@@ -52,15 +52,15 @@ class OpenStackUtils:
         #not sure if it returns anything
         return self.glance.images.delete(imageRef.id)
 
-    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', nics=None, computeType=False):
-        if nics is None:
-            nics = 'none'
+    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', networkId=None, computeType=False):
+        if networkId is None:
+            networkId = 'none'
         novaFlavor = self.nova.flavors.find(name=flavorName)
 
-        if compute:
-            return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=nics)
+        if computeType:
+            return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}])
         else:
-            return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=nics)
+            return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=[{'net-id': networkId}])
 
     # Workaround, since documentation doesn't provide enough information about a get operation by image name
     # @TODO: Refactor ASAP
@@ -77,7 +77,6 @@ class OpenStackUtils:
 
         if len(localNetworks['networks']) > 0:
             networkId = localNetworks['networks'][0]['id']
-            nics = [{'net-id' : networkId}]
         else:
             # https://developer.openstack.org/api-ref/network/v2/#create-network
             networkRequest = {
@@ -89,7 +88,6 @@ class OpenStackUtils:
 
             response = self.neutron.create_network(networkRequest)
             networkId = response['network']['id']
-            nics = [{'net-id': networkId}]
 
             # https://developer.openstack.org/api-ref/network/v2/#create-subnet
             subnetRequest = {
@@ -101,4 +99,4 @@ class OpenStackUtils:
                 }
             }
             self.neutron.create_subnet(subnetRequest)
-        return nics
+        return networkId

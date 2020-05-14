@@ -35,7 +35,7 @@ class InstanceLifeCycleMetering:
         self.imageInfo = imageInfo
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
-        self.instanceImage, self.nics = self.prepareLifeCycleScenario(imageInfo)
+        self.instanceImage, self.networkId = self.prepareLifeCycleScenario(imageInfo)
 
     def prepareLifeCycleScenario(self, imageInfo):
         if not isinstance(imageInfo, OsImage):
@@ -46,16 +46,16 @@ class InstanceLifeCycleMetering:
         if cachedImage is None:
             defaultLogger.warning('Image cache is disabled!')
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
-        self.nics = self.openStackUtils.networkSetup()
+        self.networkId = self.openStackUtils.networkSetup()
 
-        return (self.instanceImage, self.nics)
+        return (self.instanceImage, self.networkId)
 
     def startInducedLifeCycle(self, operationObjectList, caching=False):
         #
         # FIXME: Should delete all created instances before induced_life_cycle starts
         #
-        if self.instanceImage is None or self.nics is None:
-            self.instanceImage, self.nics = self.prepareLifeCycleScenario(self.imageInfo)
+        if self.instanceImage is None or self.networkId is None:
+            self.instanceImage, self.networkId = self.prepareLifeCycleScenario(self.imageInfo)
         if operationObjectList is None:
             defaultLogger.error("Please, provide operationObjectList")
             return None
@@ -90,7 +90,7 @@ class InstanceLifeCycleMetering:
             try:
                 if operationObject['operation'].upper() == 'CREATE':
                     instanceServer = self.openStackUtils.createInstance('instanceServer',
-                                    self.instanceImage, operationObject['params']['flavor'], self.nics, computeType=True)
+                                    self.instanceImage, operationObject['params']['flavor'], self.networkId, computeType=True)
                 else:
                     if instanceServer.status.upper() in operationObject['requiredStatus']:
                         defaultLogger.info('called anonymousFunction!\n')
