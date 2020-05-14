@@ -5,7 +5,7 @@ rm -rf *.log;
 rm -rf *.db;
 
 #TODO Iterate over a list of images... Maybe pass images as arguments to clean.sh
-openstack instance delete instanceServer;
+openstack server delete instanceServer;
 openstack image delete fedora31;
 
 #shows if there are dumps stuck
