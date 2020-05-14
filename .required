@@ -6,4 +6,5 @@ python-glanceclient
 python-neutronclient
 python-novaclient
 python-troveclient
+python-openstackclient
 dpkt

@@ -51,6 +51,9 @@ class InstanceLifeCycleMetering:
         return (self.instanceImage, self.nics)
 
     def startInducedLifeCycle(self, operationObjectList, caching=False):
+        #
+        # FIXME: Should delete all created instances before induced_life_cycle starts
+        #
         if self.instanceImage is None or self.nics is None:
             self.instanceImage, self.nics = self.prepareLifeCycleScenario(self.imageInfo)
         if operationObjectList is None:
@@ -97,12 +100,7 @@ class InstanceLifeCycleMetering:
                         defaultLogger.error('You cannot make a server status move from %s to %s\n', instanceServer.status.upper(), operationObject['targetStatus'])
                         networkMeter.stopPacketCapture()
                         return None
-                while instanceServer.status != operationObject['targetStatus']:
-                    if instanceServer.status.upper() == 'ERROR':
-                        networkMeter.stopPacketCapture()
-                        raise ValueError('Server status: ERROR. Aborting! Delete the instances and restart')
-                    instanceServer.get()
-                    time.sleep(1)
+                self.openStackUtils.openstackConn.compute.wait_for_server(instanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
             except ValueError as error:
                 defaultLogger.error(error)
                 raise

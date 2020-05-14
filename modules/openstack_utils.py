@@ -7,6 +7,7 @@ from keystoneauth1 import session as keystoneSession
 from glanceclient import Client as glanceClient
 from neutronclient.v2_0 import client as neutronClient
 from troveclient.v1 import client as troveClient
+from openstack import connection
 from modules.objects.os_image import *
 
 #@TODO: proper indent too long lines
@@ -22,6 +23,7 @@ class OpenStackUtils:
             self.nova = novaClient.Client('2.1', session=self.session)
             self.instanceAction = self.nova.instance_action
             self.neutron = neutronClient.Client(session=self.session)
+            self.openstackConn = connection.Connection(session=self.session, compute_api_version='2')
 
     def authenticate(self, authInfo=None):
         if authInfo is None:
