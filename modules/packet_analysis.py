@@ -2,6 +2,7 @@ from modules.loggers import *
 import itertools
 import datetime
 import dpkt
+import os
 from modules.objects import db_info as DB_INFO
 from modules.objects.os_image import *
 from modules.objects.execution import *
@@ -11,6 +12,9 @@ from modules.objects.packet_info import *
 from modules.objects.service import *
 from modules.objects.request_info import *
 import modules.utils as UTILS
+
+
+#TODO --> Document me :)
 
 class TrafficAnalysis:
     def __init__(self, meteringObj=None, pcapFile=None):
@@ -25,13 +29,15 @@ class TrafficAnalysis:
             openSession.close()
             pcapFile = operation.type.upper() + '_' + osImage.image_name + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
+        lsofFile = 'lsof_' + operation.type.upper() + '_' +  osImage.image_name + '_' + str(operation.exec_id)
+        self.lsofFile = None
+
+        if os.path.isfile(self.lsofFile):
+            self.lsofFile = lsofFile
         self.pcapFile = pcapFile
         self.meteringObj = meteringObj
         self.services = UTILS.getServices()
-
-    def printPyShark(self):
-        captureFile = PyShark.FileCapture(self.pcapFile)
-        print(captureFile[0])
+        self.lsofFile = 'lsof_' + operation.type.upper() + '_' +  osImage.image_name + '_' + str(operation.exec_id)
 
     def runAnalysis(self):
         def getTransportLayer(packet):

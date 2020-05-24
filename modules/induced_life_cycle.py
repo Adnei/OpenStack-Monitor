@@ -22,8 +22,28 @@ from modules.objects import db_info as DB_INFO
 #@TODO: proper indent too long lines
 
 class InstanceLifeCycleMetering:
+    """
+        This class represents a 'monitored instance life cycle'
+
+        The specified life cycle (vm_operation.py) will be executed and the traffic will be captured
+
+        Attributes:
+                    ifaceList (array of string)
+                    imageInfo (<OsImage> --> see objects/os_image.py )
+                    openStackUtils (<OpenStackUtils> --> see openstack_utils.py)
+                    instanceImage (OpenStack Glance Image object)
+                    networkId (OpenStack uuid for network)
+    """
     autoId = itertools.count()
     def __init__(self, ifaceList=['lo'], imageInfo=None):
+        """
+            Instantiating a 'monitored instance life cycle' takes a list of interfaces to be monitored and information about the image used for the instance server
+
+            Parameters: ifaceList (array of string): list of interfaces to be monitored. Defaults to loopback interface
+                        imageInfo (<OsImage> --> see objects/os_image.py): Object that represents an image to be used for the instance server.
+                            If none is provided, it will use the first persisted OsImage in the database.
+                            If none persisted OsImages, returns error 'Please, create at least one OsImage object'
+        """
         if imageInfo is None:
             openSession = DB_INFO.getOpenSession()
             try:
@@ -38,10 +58,18 @@ class InstanceLifeCycleMetering:
         self.instanceImage, self.networkId = self.prepareLifeCycleScenario(imageInfo)
 
     def prepareLifeCycleScenario(self, imageInfo):
+        """
+            Checks for cached images and network setups. Creates them if none cached were found.
+            Most times its called only when instantiating a InstanceLifeCycleMetering class
+
+            Parameters:
+                        imageInfo (<OsImage> --> see objects/os_image.py): Object that represents an image to be used for the instance server.
+
+            Returns:
+                        tuple -> (instanceImage, networkId): OpenStack Glance image and network uuid respectively
+        """
         if not isinstance(imageInfo, OsImage):
             return (None,None)
-
-        #create image and network
         cachedImage = self.openStackUtils.getImageByName(imageInfo.image_name)
         if cachedImage is None:
             defaultLogger.warning('Image cache is disabled!')
@@ -51,6 +79,16 @@ class InstanceLifeCycleMetering:
         return (self.instanceImage, self.networkId)
 
     def startInducedLifeCycle(self, operationObjectList, imageCaching=False):
+        """
+            Executes the specified life cycle ( in vm_operation.py).
+            It takes the servers through all specified states. It only does allowed state transitions. Please, refer to https://docs.openstack.org/nova/latest/reference/vm-states.html
+
+            Parameters:
+                        operationObjectList (see vm_operation.py): list of operations to be executed against the server
+                        imageCaching (Boolean): Flag that sets ON or OFF the image caching
+        """
+
+
         #
         # FIXME: Should delete all created instances before induced_life_cycle starts
         #
@@ -83,6 +121,8 @@ class InstanceLifeCycleMetering:
             operation.exec_id = execution.exec_id
             osImage = openSession.query(OsImage).get(execution.image_id)
             operation.type = operationObject['operation'].upper()
+            lsofTempFile = '/proj/labp2d-PG0/temp_lsof'
+            lsofProc, lsofTs = networkMeter.startListFiles(tempFilePath=lsofTempFile)
             startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id) + '_')
             operation.metering_start = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
@@ -106,11 +146,13 @@ class InstanceLifeCycleMetering:
                 raise
 
             finishTimestamp = networkMeter.stopPacketCapture()
+            resultLsofFile = 'lsof_'+operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id)
+            stoppedLsof = networkMeter.stopListFiles(lsofProc, resultLsofFile, tempFilePath=lsofTempFile)
             operation.metering_finish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
             novaServer = self.openStackUtils.nova.servers.get(computeInstanceServer.id)
-            self.persistOperationMetering(operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
+            self.__persistOperationMetering(operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
 
         novaServer.force_delete()
         if not imageCaching:
@@ -119,20 +161,32 @@ class InstanceLifeCycleMetering:
         openSession.close()
 
 
-    def persistOperationMetering(self, operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
+    def __persistOperationMetering(self, operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
         openSession = DB_INFO.getOpenSession()
+        """
+            Persists and Operation and its Meterings.
+            Used as auxiliar function. Should not be called from outside
+        """
 
+        #####################################################################################################################
+        # OpenStack list instance actions.                                                                                  #
+        # Due to a FIXME inside the get instance action, this workaround was implemented                                    #
+        # It lists all the actions executed to the instance and filters searching by the current operation being persisted  #
+        #####################################################################################################################
         actionReq = list(filter(lambda actionReq: actionReq.action.upper() == operationObject['operation'].upper(),
             self.openStackUtils.instanceAction.list(novaServer)))[0]
+        #####################################################################################################################
         operation.openstack_info_start = datetime.strptime(actionReq.start_time, START_TIME_FORMAT).timestamp()
         operation.openstack_info_finish = datetime.strptime(novaServer.updated, UTC_TIME_FORMAT).timestamp()
         operation.metering_duration = operation.metering_finish - operation.metering_start
         operation.openstack_info_duration = operation.openstack_info_finish - operation.openstack_info_start
         if operation.metering_finish < operation.openstack_info_finish:
             defaultLogger.error('ERROR: Network Meter stopped before the operation finished')
+            #FIXME Should throw error
             return None
         if operation.metering_start > operation.openstack_info_start:
             defaultLogger.error('ERROR: Network Meter started after the operation started')
+            #FIXME Should throw error
             return None
         openSession.add(operation)
         openSession.flush()

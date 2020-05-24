@@ -13,6 +13,19 @@ from modules.objects.os_image import *
 #@TODO: proper indent too long lines
 
 class OpenStackUtils:
+    """
+        Utils class for OpenStack interaction
+
+        Attributes: authInfo (authentication object. See authenticate method)
+                    session (authenticated session)
+                    glance (glance object)
+                    trove (trove object)
+                    nova (nova object)
+                    instanceAction (shortcut for nova.instance_action object)
+                    neutron (neutron object)
+                    openstackConn (compute api connection object)
+    """
+
     def __init__(self, authInfo=None, session=None):
             self.authInfo = authInfo
             self.session = session
@@ -26,9 +39,16 @@ class OpenStackUtils:
             self.openstackConn = connection.Connection(session=self.session, compute_api_version='2')
 
     def authenticate(self, authInfo=None):
+        """
+            authenticats with OpenStack API's (through keystone)
+
+            Parameters:
+                        authInfo: Object that holds information to authenticate with keystone.
+                        If none, this requires the [machine] user to be stated as an OpenStack admin (admin-openrc.sh file)
+                        It will look for environment variables holding informations to authenticate.
+                        see docs.openstack.org/liberty/install-guide-ubuntu/keystone-openrc.html
+        """
         if authInfo is None:
-            #this requires the [machine] user to be stated as an OpenStack admin (admin-openrc.sh file)
-            #see docs.openstack.org/liberty/install-guide-ubuntu/keystone-openrc.html
             authInfo = {
                 'auth_url': env['OS_AUTH_URL'],
                 'username': env['OS_USERNAME'],
@@ -40,6 +60,15 @@ class OpenStackUtils:
         return keystoneSession.Session(auth=v3.Password(**authInfo))
 
     def createImage(self, imageInfo=None):
+        """
+            Creates a glance image following imageInfo.
+
+            Parameters:
+                        imageInfo (<OsImage> see os_image.py)
+
+            Returns:
+                        Glance image object
+        """
         if not isinstance(imageInfo, OsImage):
             return None
         image = self.glance.images.create(name=imageInfo.image_name,
@@ -49,10 +78,31 @@ class OpenStackUtils:
         return image
 
     def deleteImage(self, imageRef):
-        #not sure if it returns anything
+        """
+            Deletes image 'imageRef'.
+            Uses glance API
+
+            Parameters:
+                        imageRef: Glance Image Object
+
+        """
         return self.glance.images.delete(imageRef.id)
 
     def createInstance(self, instanceName, glanceImage, flavorName='m1.small', networkId=None, computeType=False):
+        """
+            Creates an instance.
+            If computeType == True, it returns an instance of openstack compute.
+            If computeType == False, it returns an instance of nova server.
+
+            Parameters:
+                        instanceName (string): The name of the instance
+                        glanceImage (openstack glance image object): the image to be used for the instance server
+                        flavorName (string): An OpenStack instance flavor
+                        networkId (openstack network uuid): the uuid used for the network
+                        computeType (boolean): Flag that changes the way how the instance is created (through nova api or compute)
+            Returns:
+                        The instance server
+        """
         if networkId is None:
             networkId = 'none'
         novaFlavor = self.nova.flavors.find(name=flavorName)
@@ -66,6 +116,9 @@ class OpenStackUtils:
     # @TODO: Refactor ASAP
     # Serious performance issue
     def getImageByName(self, name):
+        """
+            Gets the glance image by name
+        """
         imageList = self.glance.images.list()
         filteredImageList = list(filter(lambda image: image.name == name, imageList))
         if len(filteredImageList) == 0 :
@@ -73,6 +126,9 @@ class OpenStackUtils:
         return filteredImageList[0]
 
     def networkSetup(self):
+        """
+            Creates a default network configuration and returns the network uuid
+        """
         localNetworks = self.neutron.list_networks(name='local')
 
         if len(localNetworks['networks']) > 0:
