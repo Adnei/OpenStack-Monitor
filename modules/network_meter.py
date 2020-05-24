@@ -26,28 +26,28 @@ class NetworkMeter:
         #The flags -nn turns off dns resolution for speed, -s 0 saves the full packet and -w writes to a file.
         for capture in self.captureList:
             command = 'exec tcpdump -i '+capture['iface']+' -nn -s 0 -w ' + fileId + capture['file']
-            capture['process'], ts = startProcess(command)
+            capture['process'], ts = self.__startProcess(command)
         return ts
 
     def stopPacketCapture(self):
         for capture in self.captureList:
-            capture['process'] = stopProcess(capture['process'])
+            capture['process'] = self.__stopProcess(capture['process'])
         return time.time()
 
     def startListFiles(self, tempFilePath='lsof_temp'):
         lsofProc = 'lsof -r 2 -i :5672 | sort >>' + tempFilePath
-        return startProcess(lsofProc)
+        return self.__startProcess(lsofProc)
 
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
-        stopProcess(process)
+        self.__stopProcess(process)
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
-        removeProc, ts = startProcess(removeDuplicated)
+        removeProc, ts = self.__startProcess(removeDuplicated)
         removeProc.wait()
         try:
             os.remove(tempFilePath)
         except OSError as error:
             defaultLogger.error(error)
-            raise 
+            raise
         return True
 
     def __startProcess(self, command, shell=True, stdout=sub.DEVNULL):
