@@ -164,7 +164,7 @@ class InstanceLifeCycleMetering:
     def __persistOperationMetering(self, operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
         openSession = DB_INFO.getOpenSession()
         """
-            Persists and Operation and its Meterings.
+            Persists Operation and its Meterings.
             Used as auxiliar function. Should not be called from outside
         """
 

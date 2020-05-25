@@ -35,7 +35,7 @@ class NetworkMeter:
         return time.time()
 
     def startListFiles(self, tempFilePath='lsof_temp'):
-        lsofProc = 'lsof -r 2 -i :5672 | sort >>' + tempFilePath
+        lsofProc = 'lsof -r 2 -i :5672 >>' + tempFilePath
         return self.__startProcess(lsofProc)
 
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
