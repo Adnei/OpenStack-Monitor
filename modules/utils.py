@@ -23,13 +23,13 @@ SERVICES_MAP = {
 # These API ports are the most basic ones
 # This is not a FIXME because it's out of the scope of the experiments
 SERVICES_API_MAP = {
-        'nova-api': {8774, 8775}, #8775 nova-api metadata
-        'keystone-api': {5000, 35357},
-        'swift-api': {8080},
-        'glance-api': {9292},
-        'cinder-api': {8776},
-        'neutron-api': {9696},
-        'heat-api': {8004}
+        'nova': {8774, 8775}, #8775 nova-api metadata
+        'keystone': {5000, 35357},
+        'swift': {8080},
+        'glance': {9292},
+        'cinder': {8776},
+        'neutron': {9696},
+        'heat': {8004}
     }
 
 #Source: https://dpkt.readthedocs.io/en/latest/_modules/examples/print_packets.html
@@ -78,6 +78,9 @@ def invertDict(dict):
                 resultDict[value] = key
         return resultDict
 
+#
+# TODO Maybe create something like a DAO
+#
 def getServices():
     openSession = DB_INFO.getOpenSession()
     services = openSession.query(Service).all()
@@ -90,13 +93,12 @@ def getServiceByName(serviceName):
     openSession.close()
     return service
 
-def createService(serviceName):
-    newService = Service(serviceName=service)
+def createServicesFromMapper(servicePortMapper):
+    services = [Service(serviceName=service) for service in servicePortMapper]
     openSession = DB_INFO.getOpenSession()
-    openSession.add(newService)
+    openSession.add_all(services)
     openSession.commit()
     openSession.close()
-
 
 
 def getPortMatchingService(servicesMapList, matchPortList):
@@ -108,7 +110,6 @@ def getPortMatchingService(servicesMapList, matchPortList):
         Gets a service according to its port.
         If more than one port is provided, then the first match will be returned.
         If no matches, then returns None.
-        If it matches on a non created service, then it creates and returns the matched service.
 
         Parameters:
                     servicesMapList: A list of maps holding all the services and its ports. see SERVICES_MAP, for example
@@ -120,19 +121,12 @@ def getPortMatchingService(servicesMapList, matchPortList):
     """
 
     portMapList = [invertDict(serviceMap) for serviceMap in servicesMapList]
-
-    resultService = None
     for matchPort in matchPortList:
         for portMap in portMapList:
             if(matchPort in portMap):
                 serviceName = portMap[matchPort]
-                resultService = getServiceByName(serviceName)
-                if resultService is None:
-                    createService(serviceName)
-                    resultService = getServiceByName(serviceName)
-                return resultService
-
-    return resultService
+                return getServiceByName(serviceName)
+    return None
 
 def createOsImage(imageInfoList):
     openSession = DB_INFO.getOpenSession(expire_on_commit=False)

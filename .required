@@ -1,4 +1,3 @@
-git+https://github.com/Adnei/service_identifier.git
 sqlalchemy
 pyshark
 keystoneauth1
@@ -9,3 +8,4 @@ python-novaclient
 python-troveclient
 python-openstackclient
 dpkt
+pandas

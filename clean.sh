@@ -1,4 +1,6 @@
 #!/bin/bash
+# TODO --> CREATE A MAKE FILE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 . /root/setup/admin-openrc-newcli.sh;
 rm -rf *.pcap;
 rm -rf *.log;

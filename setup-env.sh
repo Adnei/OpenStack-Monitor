@@ -1,5 +1,8 @@
 #!/bin/bash
+# TODO --> CREATE A MAKE FILE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#It will be a pip required
+git clone https://github.com/Adnei/service_identifier.git;
 apt -y install python3-tk python3-pip && source /root/setup/admin-openrc-newcli.sh;
 pip3 install -r .required;
 #TODO: wget should read a list of images

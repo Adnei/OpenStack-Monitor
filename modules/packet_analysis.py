@@ -115,6 +115,8 @@ class TrafficAnalysis:
 
             return True
 
+        if(self.lsofMapper.is_valid_file):
+            UTILS.createServicesFromMapper(self.lsofMapper.service_port_mapper)
         openSession = DB_INFO.getOpenSession()
         packetNumber = 0
         referenceTime = UTILS.getSmallestTimestamp(self.pcapFile)
