@@ -1,3 +1,4 @@
+git+https://github.com/Adnei/service_identifier.git
 sqlalchemy
 pyshark
 keystoneauth1

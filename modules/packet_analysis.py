@@ -11,6 +11,7 @@ from modules.objects.metering import *
 from modules.objects.packet_info import *
 from modules.objects.service import *
 from modules.objects.request_info import *
+from service_identifier.lsof_mapper import Lsof_Mapper
 import modules.utils as UTILS
 
 
@@ -30,14 +31,14 @@ class TrafficAnalysis:
             pcapFile = operation.type.upper() + '_' + osImage.image_name + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
         lsofFile = 'lsof_' + operation.type.upper() + '_' +  osImage.image_name + '_' + str(operation.exec_id)
-        self.lsofFile = None
-
-        if os.path.isfile(self.lsofFile):
-            self.lsofFile = lsofFile
+        self.lsofMapper = None
+        self.servicesMapList = [UTILS.SERVICES_MAP]
+        if os.path.isfile(lsofFile):
+            self.lsofMapper = Lsof_Mapper(file_path=lsofFile)
+            if(self.lsofMapper.is_valid_file):
+                self.servicesMapList.append(self.lsofMapper.service_port_mapper)
         self.pcapFile = pcapFile
         self.meteringObj = meteringObj
-        self.services = UTILS.getServices()
-        self.lsofFile = 'lsof_' + operation.type.upper() + '_' +  osImage.image_name + '_' + str(operation.exec_id)
 
     def runAnalysis(self):
         def getTransportLayer(packet):
@@ -74,7 +75,8 @@ class TrafficAnalysis:
             packetInfo.time = str(round(packetTimestamp - referenceTime, 6))
             packetInfo.src_port = transportLayer.sport
             packetInfo.dst_port = transportLayer.dport
-            matchingService = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.src_port))
+            #First, tries to find a service corresponding to src_port. If none is found, then tries to find a service corresponding to dst_port.
+            matchingService = UTILS.getPortMatchingService(self.servicesMapList, [int(packetInfo.src_port), int(packetInfo.dst_port)])
             if matchingService is not None:
                 packetInfo.service_id = matchingService.service_id
             packetInfo.metering_id = self.meteringObj.metering_id
@@ -84,6 +86,7 @@ class TrafficAnalysis:
             openSession.add(packetInfo)
             #TODO: Store responses
             # Ex.: https://programtalk.com/python-examples/dpkt.http.Response/
+            #RequestInfo storing.
             try:
                 request = dpkt.http.Request(transportLayer.data)
                 layers += ' http'
@@ -99,22 +102,13 @@ class TrafficAnalysis:
                 requestInfo.connection = 'NO-CONNECTION-FLAG'
                 if 'connection' in request.headers:
                     requestInfo.connection = request.headers['connection']
-
-                server = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.dst_port))
+                server = UTILS.getPortMatchingService([UTILS.SERVICES_API_MAP], [int(packetInfo.dst_port)])
                 if server is not None:
                     requestInfo.server_id = server.service_id
-                client = UTILS.getPortMatchingService(self.services, UTILS.SERVICES_MAP, int(packetInfo.src_port))
+                client = UTILS.getPortMatchingService([UTILS.SERVICES_MAP], [int(packetInfo.src_port)])
                 if client is not None:
                     requestInfo.client_id = client.service_id
                 openSession.add(requestInfo)
-                #TODO:
-                #  How to find out an API call ?
-                # Client send SYN
-                # Server reply SYN ACK
-                # Client ACK
-                # Client PSH ACK --> Is it the Request ?
-                #TODO: REMOVE this log
-                defaultLogger.info('Saved a request info for packet: %s', str(packetInfo.packet_id))
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 pass
 

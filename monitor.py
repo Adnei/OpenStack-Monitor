@@ -10,12 +10,9 @@ import modules.utils as UTILS
 #    EX: import modules.utils as UTILS
 #    Then call a method from utils like this: UTILS.getServices() --> See? We know getServices came from UTILS :) (rpple)
 from modules.loggers import *
-# from modules.objects.os_image import *
 from modules.network_meter import *
 from modules.induced_life_cycle import *
-# from modules.objects import db_info as DB_INFO
 from modules.packet_analysis import *
-# from modules.objects.service import *
 
 import time
 import sys, getopt
@@ -87,9 +84,6 @@ def main(argv):
         defaultLogger.info("Traffic analysis started\nAnalysing metering id: %s", str(trafficAnalysis.meteringObj.metering_id))
         count+=1
         ignoredPacketsCounter = trafficAnalysis.runAnalysis()
-        #
-        # FIXME: Log ignored packets from which analysis --> report which execution, operation, etc...
-        #       Need detailed info
         if ignoredPacketsCounter > 0:
             defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
         else:

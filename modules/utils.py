@@ -84,12 +84,54 @@ def getServices():
     openSession.close()
     return services
 
-def getPortMatchingService(services, servicesMap, matchPort):
-    portServicesMap = invertDict(servicesMap)
-    if(matchPort not in portServicesMap):
-        return None
-    serviceName = portServicesMap[matchPort]
-    resultService = [service for service in services if service.service_name == serviceName][0]
+def getServiceByName(serviceName):
+    openSession = DB_INFO.getOpenSession()
+    service = openSession.query(Service).filter_by(service_name=serviceName).first()
+    openSession.close()
+    return service
+
+def createService(serviceName):
+    newService = Service(serviceName=service)
+    openSession = DB_INFO.getOpenSession()
+    openSession.add(newService)
+    openSession.commit()
+    openSession.close()
+
+
+
+def getPortMatchingService(servicesMapList, matchPortList):
+    """
+        @ATTENTION:
+            This method is O(n^2) (in worst case), depending on the size of servicesMapList and matchPortsList
+
+
+        Gets a service according to its port.
+        If more than one port is provided, then the first match will be returned.
+        If no matches, then returns None.
+        If it matches on a non created service, then it creates and returns the matched service.
+
+        Parameters:
+                    servicesMapList: A list of maps holding all the services and its ports. see SERVICES_MAP, for example
+                    matchPortList (array of int): list of ports to be matched against the services map
+        Returns:
+                    <Service>, the first service found corresponding to a port
+                    None, if there's no corresponding service for the provided matchPortList
+
+    """
+
+    portMapList = [invertDict(serviceMap) for serviceMap in servicesMapList]
+
+    resultService = None
+    for matchPort in matchPortList:
+        for portMap in portMapList:
+            if(matchPort in portMap):
+                serviceName = portMap[matchPort]
+                resultService = getServiceByName(serviceName)
+                if resultService is None:
+                    createService(serviceName)
+                    resultService = getServiceByName(serviceName)
+                return resultService
+
     return resultService
 
 def createOsImage(imageInfoList):
