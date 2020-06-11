@@ -30,11 +30,11 @@ class TrafficAnalysis:
             openSession.close()
             pcapFile = operation.type.upper() + '_' + osImage.image_name + '_' + str(operation.exec_id) + '_' + meteringObj.network_interface + '.pcap'
 
-        lsofFile = 'lsof_' + operation.type.upper() + '_' +  osImage.image_name + '_' + str(operation.exec_id)
+        self.lsofFile = 'lsof_' + operation.type.upper() + '_' +  osImage.image_name + '_' + str(operation.exec_id)
         self.lsofMapper = None
         self.servicesMapList = [UTILS.SERVICES_MAP]
-        if os.path.isfile(lsofFile):
-            self.lsofMapper = Lsof_Mapper(file_path=lsofFile)
+        if os.path.isfile(self.lsofFile):
+            self.lsofMapper = Lsof_Mapper(file_path=self.lsofFile)
             if(self.lsofMapper.is_valid_file):
                 self.servicesMapList.append(self.lsofMapper.service_port_mapper)
         self.pcapFile = pcapFile
@@ -117,6 +117,7 @@ class TrafficAnalysis:
 
         if(self.lsofMapper.is_valid_file):
             UTILS.createServicesFromMapper(self.lsofMapper.service_port_mapper)
+            defaultLogger.info('USING LSOF PORT MAPPER !! %s ', self.lsofFile)
         openSession = DB_INFO.getOpenSession()
         packetNumber = 0
         referenceTime = UTILS.getSmallestTimestamp(self.pcapFile)
