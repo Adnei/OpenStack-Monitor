@@ -35,10 +35,17 @@ class NetworkMeter:
         return time.time()
 
     def startListFiles(self, tempFilePath='lsof_temp'):
-        lsofProc = 'lsof -r 2 -i :5672 >>' + tempFilePath
+        lsofProc = 'lsof -r 1 -i :5672 >>' + tempFilePath
         return self.__startProcess(lsofProc)
 
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
+        #Sometimes the operation is too fast and lsof is still in its first iteration.
+        #Thus we wait until it finishes at least the first iteration
+        if(os.stat(lsofTempFile).st_size == 0):
+            defaultLogger.critical('%s could not be created!! Temp file was still empty. Waiting for LSOF.')
+            time.sleep(1)
+            return stopListFiles(process, resultFile, tempFilePath=tempFilePath)
+
         self.__stopProcess(process)
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
