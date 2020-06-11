@@ -44,7 +44,7 @@ class NetworkMeter:
         if(os.stat(tempFilePath).st_size == 0):
             defaultLogger.critical('%s could not be created!! Temp file was still empty. Waiting for LSOF.',resultFile)
             time.sleep(1)
-            return stopListFiles(process, resultFile, tempFilePath=tempFilePath)
+            return self.stopListFiles(process, resultFile, tempFilePath=tempFilePath)
 
         self.__stopProcess(process)
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
