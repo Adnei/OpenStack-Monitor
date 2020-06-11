@@ -41,7 +41,7 @@ class NetworkMeter:
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
         #Sometimes the operation is too fast and lsof is still in its first iteration.
         #Thus we wait until it finishes at least the first iteration
-        if(os.stat(lsofTempFile).st_size == 0):
+        if(os.stat(tempFilePath).st_size == 0):
             defaultLogger.critical('%s could not be created!! Temp file was still empty. Waiting for LSOF.',resultFile)
             time.sleep(1)
             return stopListFiles(process, resultFile, tempFilePath=tempFilePath)
