@@ -94,7 +94,7 @@ def getServiceByName(serviceName):
     return service
 
 def createServicesFromMapper(servicePortMapper):
-    services = [Service(serviceName=service) for service in servicePortMapper]
+    services = [Service(serviceName=service) for service in servicePortMapper if getServiceByName(service) is None]
     openSession = DB_INFO.getOpenSession()
     openSession.add_all(services)
     openSession.commit()

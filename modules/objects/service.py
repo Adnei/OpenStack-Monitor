@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship as Relationship
 class Service(DB_INFO.BASE):
     __tablename__ = 'Service'
     service_id = Column(Integer, primary_key=True)
-    service_name = Column(String)
+    service_name = Column(String, unique=True)
     client_list = Relationship('RequestInfo', foreign_keys='RequestInfo.client_id')
     server_list = Relationship('RequestInfo', foreign_keys='RequestInfo.server_id')
     packet_info_list = Relationship('PacketInfo')
