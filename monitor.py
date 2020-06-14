@@ -24,39 +24,39 @@ def main(argv):
     #   Parameterize NICs, file names, number of execution and image infos
 
     osList = UTILS.createOsImage([
-        {
-            'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
-            'imageName':'fedora31'
-        },
-        {
-            'imagePath':'focal-server-cloudimg-amd64.img',
-            'imageName':'focal_ubuntu'
-        },
-        {
-            'imagePath':'bionic-server-cloudimg-amd64.img',
-            'imageName':'bionic_ubuntu'
-        },
+        # {
+        #     'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
+        #     'imageName':'fedora31'
+        # },
+        # {
+        #     'imagePath':'focal-server-cloudimg-amd64.img',
+        #     'imageName':'focal_ubuntu'
+        # },
+        # {
+        #     'imagePath':'bionic-server-cloudimg-amd64.img',
+        #     'imageName':'bionic_ubuntu'
+        # },
         {
             'imagePath':'CentOS-7-x86_64-GenericCloud.qcow2',
             'imageName':'centos7_light'
         },
+        {
+            'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
+            'imageName':'centos7'
+        },
+        {
+            'imagePath':'debian-10-openstack-amd64.qcow2',
+            'imageName':'debian10qcow2'
+        },
         # {
-        #     'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
-        #     'imageName':'centos7'
-        # },
-        # {
-        #     'imagePath':'debian-10-openstack-amd64.qcow2',
-        #     'imageName':'debian10_qcow2'
+        #     'imagePath':'cirros-0.4.0-aarch64-disk.img',
+        #     'imageName':'cirros'
         # },
         {
-            'imagePath':'cirros-0.4.0-aarch64-disk.img',
-            'imageName':'cirros'
-        }#,
-        # {
-        #     'imagePath':'debian-10-openstack-amd64.raw',
-        #     'imageName':'debian10_raw',
-        #     'imageFormat': 'raw'
-        # }
+            'imagePath':'debian-10-openstack-amd64.raw',
+            'imageName':'debian10raw',
+            'imageFormat': 'raw'
+        }
     ])
 
     if osList is None:
@@ -65,7 +65,7 @@ def main(argv):
 
     for osImage in osList:
         instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv, imageInfo=osImage)
-        for idx in range(1,6): #Do N times
+        for idx in range(1,11): #Do N times
             instanceLifeCycleMetering.startInducedLifeCycle(VM_OPERATION.operationObjectList)
 
     openSession = DB_INFO.getOpenSession()

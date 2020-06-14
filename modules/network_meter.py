@@ -36,17 +36,20 @@ class NetworkMeter:
 
     def startListFiles(self, tempFilePath='lsof_temp'):
         lsofProc = 'lsof -r 1 -i :5672 >>' + tempFilePath
-        return self.__startProcess(lsofProc)
+        return self.__startProcess(lsofProc, preexec_fn=os.setsid)
 
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
         #Sometimes the operation is too fast and lsof is still in its first iteration.
         #Thus we wait until it finishes at least the first iteration
         if(os.stat(tempFilePath).st_size == 0):
+            defaultLogger.critical('%s (temp file) is empty!! ',tempFilePath)
             defaultLogger.critical('%s could not be created!! Temp file was still empty. Waiting for LSOF.',resultFile)
             time.sleep(1)
             return self.stopListFiles(process, resultFile, tempFilePath=tempFilePath)
 
-        self.__stopProcess(process)
+        # self.__stopProcess(process)
+        #This is a workaround to stop all the background processes
+        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
         removeProc.wait()
@@ -57,8 +60,8 @@ class NetworkMeter:
             raise
         return True
 
-    def __startProcess(self, command, shell=True, stdout=sub.DEVNULL):
-        process = sub.Popen(command, shell=shell, stdout=stdout)
+    def __startProcess(self, command, shell=True, stdout=sub.DEVNULL, preexec_fn=None):
+        process = sub.Popen(command, shell=shell, stdout=stdout, preexec_fn=preexec_fn)
         ts = time.time()
         return (process, ts)
 
