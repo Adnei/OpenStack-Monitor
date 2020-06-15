@@ -1,6 +1,7 @@
 import subprocess as sub
 import os
 import time
+import signal
 from modules.loggers import *
 
 #@TODO: proper indent too long lines
@@ -35,7 +36,7 @@ class NetworkMeter:
         return time.time()
 
     def startListFiles(self, tempFilePath='lsof_temp'):
-        lsofProc = 'lsof -r 1 -i :5672 >>' + tempFilePath
+        lsofProc = 'lsof -r 1 -i :5672 >> ' + tempFilePath
         return self.__startProcess(lsofProc, preexec_fn=os.setsid)
 
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):

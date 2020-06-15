@@ -36,26 +36,31 @@ def main(argv):
         #     'imagePath':'bionic-server-cloudimg-amd64.img',
         #     'imageName':'bionic_ubuntu'
         # },
-        {
-            'imagePath':'CentOS-7-x86_64-GenericCloud.qcow2',
-            'imageName':'centos7_light'
-        },
-        {
-            'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
-            'imageName':'centos7'
-        },
-        {
-            'imagePath':'debian-10-openstack-amd64.qcow2',
-            'imageName':'debian10qcow2'
-        },
+        # {
+        #     'imagePath':'CentOS-7-x86_64-GenericCloud.qcow2',
+        #     'imageName':'centos7_light'
+        # },
+        # {
+        #     'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
+        #     'imageName':'centos7'
+        # },
+        # {
+        #     'imagePath':'debian-10-openstack-amd64.qcow2',
+        #     'imageName':'debian10qcow2'
+        # },
         # {
         #     'imagePath':'cirros-0.4.0-aarch64-disk.img',
         #     'imageName':'cirros'
         # },
+        # {
+        #     'imagePath':'debian-10-openstack-amd64.raw',
+        #     'imageName':'debian10raw',
+        #     'imageFormat': 'raw'
+        # },
         {
-            'imagePath':'debian-10-openstack-amd64.raw',
-            'imageName':'debian10raw',
-            'imageFormat': 'raw'
+            'imagePath':'windows_server.qcow2.gz',
+            'imageName':'windows_server',
+            'imageFormat': 'qcow2'
         }
     ])
 
