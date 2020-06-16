@@ -3,6 +3,7 @@ import os
 import time
 import signal
 from modules.loggers import *
+import modules.utils as UTILS
 
 #@TODO: proper indent too long lines
 #@TODO: Use pyshark instead of tcpdump
@@ -54,12 +55,9 @@ class NetworkMeter:
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
         removeProc.wait()
-        try:
-            os.remove(tempFilePath)
-        except OSError as error:
-            defaultLogger.error(error)
-            raise
-        return True
+
+        return UTILS.deleteFile(tempFilePath)
+
 
     def __startProcess(self, command, shell=True, stdout=sub.DEVNULL, preexec_fn=None):
         process = sub.Popen(command, shell=shell, stdout=stdout, preexec_fn=preexec_fn)

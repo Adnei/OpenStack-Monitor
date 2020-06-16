@@ -160,6 +160,8 @@ class InstanceLifeCycleMetering:
             self.instanceImage = None
         openSession.close()
 
+        return execution
+
 
     def __persistOperationMetering(self, operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
         openSession = DB_INFO.getOpenSession()

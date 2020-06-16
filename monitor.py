@@ -68,31 +68,45 @@ def main(argv):
         defaultLogger.critical('Aborting! Impossible to create VMs. No images')
         return None
 
-    for osImage in osList:
-        instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv, imageInfo=osImage)
-        for idx in range(1,11): #Do N times
-            instanceLifeCycleMetering.startInducedLifeCycle(VM_OPERATION.operationObjectList)
-
-    openSession = DB_INFO.getOpenSession()
-    meteringList = openSession.query(Metering).all()
-    openSession.close()
-
     defaultServices = [ Service(serviceName=service) for service in list(UTILS.SERVICES_MAP.keys())]
     openSession = DB_INFO.getOpenSession()
     openSession.add_all(defaultServices)
     openSession.commit()
     openSession.close()
 
-    analysisList = [TrafficAnalysis(metering) for metering in meteringList]
-    count=0
-    for trafficAnalysis in analysisList:
-        defaultLogger.info("Traffic analysis started\nAnalysing metering id: %s", str(trafficAnalysis.meteringObj.metering_id))
-        count+=1
-        ignoredPacketsCounter = trafficAnalysis.runAnalysis()
-        if ignoredPacketsCounter > 0:
-            defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
-        else:
-            defaultLogger.info('Ignored packtes %s', str(ignoredPacketsCounter))
+    for osImage in osList:
+        instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv, imageInfo=osImage)
+        for idx in range(1,11): #Do N executions
+            execution = instanceLifeCycleMetering.startInducedLifeCycle(VM_OPERATION.operationObjectList)
+            openSession = DB_INFO.getOpenSession()
+            try:
+                meteringList = openSession.query(
+                    Metering
+                ).join(
+                    Operation
+                ).join(
+                    Execution
+                ).filter(
+                    Execution.exec_id == execution.exec_id
+                ).all()
+                if meteringList is None or len(meteringList) == 0:
+                    raise ValueError('No Metering found for execution id %s ', execution.exec_id)
+                analysisList = [TrafficAnalysis(metering) for metering in meteringList]
+                count=0
+                for trafficAnalysis in analysisList:
+                    defaultLogger.info("Traffic analysis started\nAnalysing metering id: %s", str(trafficAnalysis.meteringObj.metering_id))
+                    count+=1
+                    ignoredPacketsCounter = trafficAnalysis.runAnalysis()
+                    if ignoredPacketsCounter > 0:
+                        defaultLogger.critical('Ignored packtes %s', str(ignoredPacketsCounter))
+                    else:
+                        defaultLogger.info('Ignored packtes %s', str(ignoredPacketsCounter))
+                    #TODO Parameterize - Debugging mode should not delete PCAP files
+                    UTILS.deleteFile(trafficAnalysis.pcapFile)
+                    UTILS.deleteFile(trafficAnalysis.lsofFile)
+            except ValueError as error:
+                defaultLogger.error(error)
+                raise
 
 if __name__ == "__main__":
     #NICS

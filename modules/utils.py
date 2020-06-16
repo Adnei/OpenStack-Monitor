@@ -1,5 +1,6 @@
 import socket
 import dpkt
+import os
 from modules.loggers import *
 from modules.objects import db_info as DB_INFO
 from modules.objects.service import *
@@ -166,3 +167,11 @@ def getSmallestTimestamp(pcapPath):
                 smallest = timestamp
             count += 1
     return smallest
+
+def deleteFile(filePath):
+    try:
+        os.remove(filePath)
+    except OSError as error:
+        defaultLogger.error(error)
+        raise
+    return True
