@@ -95,6 +95,7 @@ def main(argv):
                 count=0
                 for trafficAnalysis in analysisList:
                     defaultLogger.info("Traffic analysis started\nAnalysing metering id: %s", str(trafficAnalysis.meteringObj.metering_id))
+                    defaultLogger.info("Working on %s file", trafficAnalysis.pcapFile)
                     count+=1
                     ignoredPacketsCounter = trafficAnalysis.runAnalysis()
                     if ignoredPacketsCounter > 0:
@@ -103,7 +104,7 @@ def main(argv):
                         defaultLogger.info('Ignored packtes %s', str(ignoredPacketsCounter))
                     #TODO Parameterize - Debugging mode should not delete PCAP files
                     UTILS.deleteFile(trafficAnalysis.pcapFile)
-                    UTILS.deleteFile(trafficAnalysis.lsofFile)
+                    # UTILS.deleteFile(trafficAnalysis.lsofFile)
             except ValueError as error:
                 defaultLogger.error(error)
                 raise
