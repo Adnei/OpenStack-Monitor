@@ -175,7 +175,7 @@ class InstanceLifeCycleMetering:
         # It lists all the actions executed to the instance and filters searching by the current operation being persisted  #
         #####################################################################################################################
         actionReq = list(filter(lambda actionReq: actionReq.action.upper() == operationObject['operation'].upper(),
-            self.openStackUtils.instanceAction.list(novaServer)))[0]
+            self.openStackUtils.instanceAction.list(computeInstanceServer)))[0]
         #####################################################################################################################
         operation.openstack_info_start = datetime.strptime(actionReq.start_time, START_TIME_FORMAT).timestamp()
         operation.openstack_info_finish = datetime.strptime(computeInstanceServer.updated_at, UTC_TIME_FORMAT).timestamp()
