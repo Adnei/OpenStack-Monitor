@@ -151,8 +151,7 @@ class InstanceLifeCycleMetering:
             operation.metering_finish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
-            novaServer = self.openStackUtils.nova.servers.get(computeInstanceServer.id)
-            self.__persistOperationMetering(operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
+            self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
 
         novaServer.force_delete()
         if not imageCaching:
@@ -163,7 +162,7 @@ class InstanceLifeCycleMetering:
         return execution
 
 
-    def __persistOperationMetering(self, operation, novaServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
+    def __persistOperationMetering(self, operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT):
         openSession = DB_INFO.getOpenSession()
         """
             Persists Operation and its Meterings.
@@ -179,7 +178,7 @@ class InstanceLifeCycleMetering:
             self.openStackUtils.instanceAction.list(novaServer)))[0]
         #####################################################################################################################
         operation.openstack_info_start = datetime.strptime(actionReq.start_time, START_TIME_FORMAT).timestamp()
-        operation.openstack_info_finish = datetime.strptime(novaServer.updated, UTC_TIME_FORMAT).timestamp()
+        operation.openstack_info_finish = datetime.strptime(computeInstanceServer.updated_at, UTC_TIME_FORMAT).timestamp()
         operation.metering_duration = operation.metering_finish - operation.metering_start
         operation.openstack_info_duration = operation.openstack_info_finish - operation.openstack_info_start
         if operation.metering_finish < operation.openstack_info_finish:
