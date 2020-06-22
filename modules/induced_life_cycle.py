@@ -152,6 +152,7 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
+            time.sleep(60)
 
         self.openStackUtils.openstackConn.compute.delete_server(computeInstanceServer)
         if not imageCaching:
