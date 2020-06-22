@@ -153,7 +153,7 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
 
-        novaServer.force_delete()
+        self.openStackUtils.openstackConn.compute.delete_server(computeInstanceServer)
         if not imageCaching:
             self.openStackUtils.deleteImage(self.instanceImage)
             self.instanceImage = None
