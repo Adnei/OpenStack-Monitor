@@ -14,6 +14,8 @@ wget https://cdimage.debian.org/cdimage/openstack/current-10/debian-10-openstack
 #wget https://download.cirros-cloud.net/0.4.0/cirros-0.4.0-aarch64-disk.img; # 15MB
 wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1707.qcow2; # 1.3 GB
 wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2; #898 MB
+wget https://download.fedoraproject.org/pub/fedora/linux/releases/32/Cloud/x86_64/images/Fedora-Cloud-Base-32-1.6.x86_64.qcow2
+
 
 source /root/setup/info.mgmt
 

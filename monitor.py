@@ -28,6 +28,10 @@ def main(argv):
         #     'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
         #     'imageName':'fedora31'
         # },
+        {
+            'imagePath':'Fedora-Cloud-Base-32-1.6.x86_64.qcow2',
+            'imageName':'fedora32'
+        }
         # {
         #     'imagePath':'focal-server-cloudimg-amd64.img',
         #     'imageName':'focal_ubuntu'
@@ -57,11 +61,11 @@ def main(argv):
         #     'imageName':'debian10raw',
         #     'imageFormat': 'raw'
         # },
-        {
-            'imagePath':'windows_server.qcow2.gz',
-            'imageName':'windows_server',
-            'imageFormat': 'qcow2'
-        }
+        # {
+        #     'imagePath':'windows_server.qcow2.gz',
+        #     'imageName':'windows_server',
+        #     'imageFormat': 'qcow2'
+        # }
     ])
 
     if osList is None:
@@ -76,7 +80,7 @@ def main(argv):
 
     for osImage in osList:
         instanceLifeCycleMetering = InstanceLifeCycleMetering(ifaceList=argv, imageInfo=osImage)
-        for idx in range(1,11): #Do N executions
+        for idx in range(1,31): #Do N executions
             execution = instanceLifeCycleMetering.startInducedLifeCycle(VM_OPERATION.operationObjectList)
             openSession = DB_INFO.getOpenSession()
             try:
