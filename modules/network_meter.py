@@ -38,7 +38,9 @@ class NetworkMeter:
 
     def startListFiles(self, tempFilePath='lsof_temp'):
         lsofProc = 'lsof -r 1 -i :5672 >> ' + tempFilePath
-        return self.__startProcess(lsofProc, preexec_fn=os.setsid)
+        proc, ts = self.__startProcess(lsofProc, preexec_fn=os.setsid)
+        defaultLogger.info('lsof started. Storing at %s. PID = %s, timestamp = %s',tempFilePath, proc.pid, ts)
+        return (proc, ts)
 
     def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
         #Sometimes the operation is too fast and lsof is still in its first iteration.
@@ -51,6 +53,7 @@ class NetworkMeter:
 
         # self.__stopProcess(process)
         #This is a workaround to stop all the background processes
+        #FIXME should do it inside a try catch and log errors nicely
         os.killpg(os.getpgid(process.pid), signal.SIGTERM)
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)

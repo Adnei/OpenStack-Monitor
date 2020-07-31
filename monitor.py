@@ -28,9 +28,13 @@ def main(argv):
         #     'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
         #     'imageName':'fedora31'
         # },
+        # {
+        #     'imagePath':'Fedora-Cloud-Base-32-1.6.x86_64.qcow2',
+        #     'imageName':'fedora32'
+        # },
         {
-            'imagePath':'Fedora-Cloud-Base-32-1.6.x86_64.qcow2',
-            'imageName':'fedora32'
+            'imagePath':'FreeBSD-12.0-RELEASE-amd64.qcow2.xz',
+            'imageName':'freebsd12'
         }
         # {
         #     'imagePath':'focal-server-cloudimg-amd64.img',
