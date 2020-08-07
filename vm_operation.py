@@ -26,7 +26,7 @@ operationObjectList = [
         'operation':'CREATE',
         'targetStatus':'ACTIVE',
         'requiredStatus':['BUILD'], #Note: OpenStack should refactor this status to INITIALIZE
-        'params':{'flavor':'m1.small'}
+        'params':{'flavor':'m1.large'}
     },
     {
         'operation':'SUSPEND',
