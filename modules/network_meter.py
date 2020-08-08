@@ -60,7 +60,7 @@ class NetworkMeter:
         #This is a workaround to stop all the background processes
         #FIXME should do it inside a try catch and log errors nicely
         # os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-        self.__stopProcess(process)
+        os.kill(process.pid, signal.SIGINT) # like pressing CTRL + C
         fileObject.close()
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
