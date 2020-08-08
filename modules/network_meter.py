@@ -37,24 +37,28 @@ class NetworkMeter:
         return time.time()
 
     def startListFiles(self, tempFilePath='lsof_temp'):
-        lsofProc = 'lsof -r 1 -i :5672 >> ' + tempFilePath
-        proc, ts = self.__startProcess(lsofProc, preexec_fn=os.setsid)
+        fileObject = open(tempFilePath, 'w')
+        lsofProc = 'lsof -r 1 -i :5672'
+        # proc, ts = self.__startProcess(lsofProc, preexec_fn=os.setsid, stdout=fileObject)
+        proc, ts = self.__startProcess(lsofProc, stdout=fileObject, start_new_session=True)
         defaultLogger.info('lsof started. Storing at %s. PID = %s, timestamp = %s',tempFilePath, proc.pid, ts)
-        return (proc, ts)
+        return (proc, ts, fileObject)
 
-    def stopListFiles(self, process, resultFile, tempFilePath='lsof_temp'):
+    def stopListFiles(self, process, resultFile, fileObject):
+        tempFilePath = fileObject.name
         #Sometimes the operation is too fast and lsof is still in its first iteration.
         #Thus we wait until it finishes at least the first iteration
-        if(os.path.isfile(tempFilePath) == False or os.stat(tempFilePath).st_size == 0):
+        if(os.path.isfile(fileObject.name) == False or os.stat(fileObject.name).st_size == 0):
             defaultLogger.critical('%s (temp file) is empty!! ',tempFilePath)
             defaultLogger.critical('%s could not be created!! Temp file was still empty. Waiting for LSOF.',resultFile)
             time.sleep(1)
-            return self.stopListFiles(process, resultFile, tempFilePath=tempFilePath)
+            return self.stopListFiles(process, resultFile, fileObject)
 
         # self.__stopProcess(process)
         #This is a workaround to stop all the background processes
         #FIXME should do it inside a try catch and log errors nicely
         os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        fileObject.close()
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
         removeProc.wait()
@@ -62,8 +66,8 @@ class NetworkMeter:
         return UTILS.deleteFile(tempFilePath)
 
 
-    def __startProcess(self, command, shell=True, stdout=sub.DEVNULL, preexec_fn=None):
-        process = sub.Popen(command, shell=shell, stdout=stdout, preexec_fn=preexec_fn)
+    def __startProcess(self, command, shell=True, stdout=sub.DEVNULL, preexec_fn=None, start_new_session=None):
+        process = sub.Popen(command, shell=shell, stdout=stdout, preexec_fn=preexec_fn, start_new_session=start_new_session)
         ts = time.time()
         return (process, ts)
 

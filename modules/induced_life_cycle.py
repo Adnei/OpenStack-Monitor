@@ -121,8 +121,8 @@ class InstanceLifeCycleMetering:
             operation.exec_id = execution.exec_id
             osImage = openSession.query(OsImage).get(execution.image_id)
             operation.type = operationObject['operation'].upper()
-            lsofTempFile = '/proj/labp2d-PG0/temp_lsof'
-            lsofProc, lsofTs = networkMeter.startListFiles(tempFilePath=lsofTempFile)
+            lsofTempFilePath = '/proj/labp2d-PG0/temp_lsof'
+            lsofProc, lsofTs, tempFileObject = networkMeter.startListFiles(tempFilePath=lsofTempFilePath)
             startTimestamp = networkMeter.startPacketCapture(fileId=operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id) + '_')
             operation.metering_start = datetime.utcfromtimestamp(startTimestamp).timestamp() # get utc format instead of time since epoch
             time.sleep(1) #tcpdump sync
@@ -147,7 +147,7 @@ class InstanceLifeCycleMetering:
 
             finishTimestamp = networkMeter.stopPacketCapture()
             resultLsofFile = 'lsof_'+operationObject['operation'].upper() + '_' + osImage.image_name + '_' + str(execution.exec_id)
-            stoppedLsof = networkMeter.stopListFiles(lsofProc, resultLsofFile, tempFilePath=lsofTempFile)
+            stoppedLsof = networkMeter.stopListFiles(lsofProc, resultLsofFile, tempFileObject)
             operation.metering_finish = datetime.utcfromtimestamp(finishTimestamp).timestamp() # get utc format instead of time since epoch
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
