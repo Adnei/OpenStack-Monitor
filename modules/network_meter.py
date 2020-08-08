@@ -66,8 +66,8 @@ class NetworkMeter:
         return UTILS.deleteFile(tempFilePath)
 
 
-    def __startProcess(self, command, shell=True, stdout=sub.DEVNULL, preexec_fn=None, start_new_session=None):
-        process = sub.Popen(command, shell=shell, stdout=stdout, preexec_fn=preexec_fn, start_new_session=start_new_session)
+    def __startProcess(self, command, shell=True, stdout=sub.DEVNULL, start_new_session=False):
+        process = sub.Popen(command, shell=shell, stdout=stdout, start_new_session=start_new_session)
         ts = time.time()
         return (process, ts)
 
