@@ -9,6 +9,7 @@ import modules.utils as UTILS
 #@TODO: Use pyshark instead of tcpdump
 #       It will do the same thing, but with a python wrapper
 #@TODO --> Document me :)
+#@FIXME avoid the use of shell=True when working with subprocess
 class NetworkMeter:
     def __init__(self, ifaceList=['lo'], outputFileList=['lo.pcap'], lsofTemp='/proj/labp2d-PG0/lsof_temp'):
         if len(ifaceList) != len(outputFileList):
@@ -40,7 +41,8 @@ class NetworkMeter:
         fileObject = open(tempFilePath, 'w')
         lsofProc = 'lsof -r 1 -i :5672'
         # proc, ts = self.__startProcess(lsofProc, preexec_fn=os.setsid, stdout=fileObject)
-        proc, ts = self.__startProcess(lsofProc, stdout=fileObject, start_new_session=True)
+        # proc, ts = self.__startProcess(lsofProc, stdout=fileObject, start_new_session=True)
+        proc, ts = self.__startProcess(lsofProc, stdout=fileObject)
         defaultLogger.info('lsof started. Storing at %s. PID = %s, timestamp = %s',tempFilePath, proc.pid, ts)
         return (proc, ts, fileObject)
 
@@ -57,7 +59,8 @@ class NetworkMeter:
         # self.__stopProcess(process)
         #This is a workaround to stop all the background processes
         #FIXME should do it inside a try catch and log errors nicely
-        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        # os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        self.__stopProcess(process)
         fileObject.close()
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
