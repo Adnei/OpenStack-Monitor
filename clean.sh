@@ -9,7 +9,7 @@ rm -rf lsof*;
 rm -rf /proj/labp2d-PG0/temp_lsof;
 
 #TODO Iterate over a list of images... Maybe pass images as arguments to clean.sh
-openstack server delete instanceServer;
+openstack server delete computeInstanceServer;
 openstack image delete fedora31;
 
 #shows if there are dumps stuck
