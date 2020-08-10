@@ -41,8 +41,8 @@ class NetworkMeter:
         fileObject = open(tempFilePath, 'w')
         lsofProc = 'lsof -r 1 -i :5672'
         # proc, ts = self.__startProcess(lsofProc, preexec_fn=os.setsid, stdout=fileObject)
-        # proc, ts = self.__startProcess(lsofProc, stdout=fileObject, start_new_session=True)
-        proc, ts = self.__startProcess(lsofProc, stdout=fileObject)
+        proc, ts = self.__startProcess(lsofProc, stdout=fileObject, start_new_session=True)
+        # proc, ts = self.__startProcess(lsofProc, stdout=fileObject)
         defaultLogger.info('lsof started. Storing at %s. PID = %s, timestamp = %s',tempFilePath, proc.pid, ts)
         return (proc, ts, fileObject)
 
@@ -59,8 +59,8 @@ class NetworkMeter:
         # self.__stopProcess(process)
         #This is a workaround to stop all the background processes
         #FIXME should do it inside a try catch and log errors nicely
-        # os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-        os.kill(process.pid, signal.SIGINT) # like pressing CTRL + C
+        os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+        # os.kill(process.pid, signal.SIGINT) # like pressing CTRL + C
         fileObject.close()
         removeDuplicated = "awk '!/./ || !seen[$0]++' "+tempFilePath+" > " + resultFile
         removeProc, ts = self.__startProcess(removeDuplicated)
