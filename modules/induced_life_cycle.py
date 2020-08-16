@@ -53,10 +53,11 @@ class InstanceLifeCycleMetering:
             except (NoResultFound, err):
                 defaultLogger.error("Please, create at least one OsImage object")
 
+        self.networkName = 'flat-lan-1-net'
         self.imageInfo = imageInfo
         self.ifaceList = ifaceList
         self.openStackUtils = OpenStackUtils() #use default authInfo
-        self.instanceImage, self.networkId = self.prepareLifeCycleScenario(imageInfo)
+        self.instanceImage, self.networkId = self.prepareLifeCycleScenario(imageInfo, self.networkName)
 
     def prepareLifeCycleScenario(self, imageInfo, networkName):
         """
@@ -93,9 +94,8 @@ class InstanceLifeCycleMetering:
         #
         # FIXME: Should delete all created instances before induced_life_cycle starts
         #
-        networkName = 'flat-lan-1-net'
         if self.instanceImage is None or self.networkId is None:
-            self.instanceImage, self.networkId = self.prepareLifeCycleScenario(self.imageInfo, networkName)
+            self.instanceImage, self.networkId = self.prepareLifeCycleScenario(self.imageInfo, self.networkName)
         if operationObjectList is None:
             defaultLogger.error("Please, provide operationObjectList")
             return None
