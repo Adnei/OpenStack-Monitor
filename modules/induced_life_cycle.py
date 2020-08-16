@@ -1,4 +1,5 @@
 from modules.loggers import *
+import pyssh
 import time
 import itertools
 import calendar
@@ -141,6 +142,8 @@ class InstanceLifeCycleMetering:
                         networkMeter.stopPacketCapture()
                         return None
                 computeInstanceServer = self.openStackUtils.openstackConn.compute.wait_for_server(computeInstanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
+                if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
+                    session = pyssh.connect('test')
             except ValueError as error:
                 defaultLogger.error(error)
                 raise
