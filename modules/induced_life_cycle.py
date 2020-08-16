@@ -58,7 +58,7 @@ class InstanceLifeCycleMetering:
         self.openStackUtils = OpenStackUtils() #use default authInfo
         self.instanceImage, self.networkId = self.prepareLifeCycleScenario(imageInfo)
 
-    def prepareLifeCycleScenario(self, imageInfo):
+    def prepareLifeCycleScenario(self, imageInfo, networkName):
         """
             Checks for cached images and network setups. Creates them if none cached were found.
             Most times its called only when instantiating a InstanceLifeCycleMetering class
@@ -75,7 +75,7 @@ class InstanceLifeCycleMetering:
         if cachedImage is None:
             defaultLogger.warning('Image cache is disabled!')
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
-        self.networkId = self.openStackUtils.networkSetup('flat-lan-1-net')
+        self.networkId = self.openStackUtils.networkSetup(networkName)
 
         return (self.instanceImage, self.networkId)
 
@@ -93,8 +93,9 @@ class InstanceLifeCycleMetering:
         #
         # FIXME: Should delete all created instances before induced_life_cycle starts
         #
+        networkName = 'flat-lan-1-net'
         if self.instanceImage is None or self.networkId is None:
-            self.instanceImage, self.networkId = self.prepareLifeCycleScenario(self.imageInfo)
+            self.instanceImage, self.networkId = self.prepareLifeCycleScenario(self.imageInfo, networkName)
         if operationObjectList is None:
             defaultLogger.error("Please, provide operationObjectList")
             return None
@@ -154,7 +155,8 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
             if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
-                ssh = SSH('HOISTNAMEGOESHERE')
+                serverAddr = computeInstanceServer.addresses[networkName][0]['addr']
+                ssh = SSH(serverAddr)
                 ssh.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,9)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
                 ssh.exec_cmd('sudo python fill_mem.py &')
             time.sleep(60)
