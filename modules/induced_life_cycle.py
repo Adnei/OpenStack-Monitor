@@ -155,7 +155,7 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
             if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
-                serverAddr = computeInstanceServer.addresses[networkName][0]['addr']
+                serverAddr = computeInstanceServer.addresses[self.networkName][0]['addr']
                 ssh = SSH(serverAddr)
                 ssh.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,9)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
                 ssh.exec_cmd('sudo python fill_mem.py &')
