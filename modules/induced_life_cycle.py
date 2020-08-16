@@ -75,7 +75,7 @@ class InstanceLifeCycleMetering:
         if cachedImage is None:
             defaultLogger.warning('Image cache is disabled!')
         self.instanceImage = cachedImage if cachedImage is not None else self.openStackUtils.createImage(imageInfo)
-        self.networkId = self.openStackUtils.networkSetup()
+        self.networkId = self.openStackUtils.networkSetup('flat-lan-1-net')
 
         return (self.instanceImage, self.networkId)
 
@@ -154,8 +154,9 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
             if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
-                ssh = SSH()
-                ssh.exec_cmd('apt-get update')
+                ssh = SSH('HOISTNAMEGOESHERE')
+                ssh.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,9)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
+                ssh.exec_cmd('sudo python fill_mem.py &')
             time.sleep(60)
 
         self.openStackUtils.openstackConn.compute.delete_server(computeInstanceServer)

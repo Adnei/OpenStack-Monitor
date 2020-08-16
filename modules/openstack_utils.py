@@ -125,19 +125,19 @@ class OpenStackUtils:
             return None
         return filteredImageList[0]
 
-    def networkSetup(self):
+    def networkSetup(self, name):
         """
             Creates a default network configuration and returns the network uuid
         """
-        localNetworks = self.neutron.list_networks(name='local')
+        network = self.neutron.list_networks(name=name)
 
-        if len(localNetworks['networks']) > 0:
-            networkId = localNetworks['networks'][0]['id']
+        if len(network['networks']) > 0:
+            networkId = network['networks'][0]['id']
         else:
             # https://developer.openstack.org/api-ref/network/v2/#create-network
             networkRequest = {
                 'network': {
-                    'name': 'local',
+                    'name': name,
                     'admin_state_up': True
                 }
             }
