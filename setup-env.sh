@@ -19,6 +19,8 @@ wget https://download.freebsd.org/ftp/releases/VM-IMAGES/12.0-RELEASE/amd64/Late
 
 
 source /root/setup/info.mgmt
+source /root/setup/parameters
 
 VLAN=${MGMT_NETWORK_INTERFACE}
+VMPSSWD=${ADMIN_PASS}
 echo "VLAN=${MGMT_NETWORK_INTERFACE}"
