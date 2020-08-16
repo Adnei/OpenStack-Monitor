@@ -9,4 +9,4 @@ python-troveclient
 python-openstackclient
 dpkt
 pandas
-pyssh-ctypes
+paramiko

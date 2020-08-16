@@ -1,5 +1,4 @@
 from modules.loggers import *
-import pyssh
 import time
 import itertools
 import calendar
@@ -7,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.orm.exc import NoResultFound
 from modules.openstack_utils import *
 from modules.network_meter import *
+from modules.ssh import SSH
 
 #FIXME: Fix Object imports
 #Objects must be imported somewhere else before induced life cycle starts
@@ -142,8 +142,6 @@ class InstanceLifeCycleMetering:
                         networkMeter.stopPacketCapture()
                         return None
                 computeInstanceServer = self.openStackUtils.openstackConn.compute.wait_for_server(computeInstanceServer, status=operationObject['targetStatus'], interval=2, wait=240)
-                if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
-                    session = pyssh.connect('test')
             except ValueError as error:
                 defaultLogger.error(error)
                 raise
@@ -155,6 +153,9 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('operation: %s finished\n', operationObject['operation'])
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
+            if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
+                ssh = SSH()
+                ssh.exec_cmd('apt-get update')
             time.sleep(60)
 
         self.openStackUtils.openstackConn.compute.delete_server(computeInstanceServer)
