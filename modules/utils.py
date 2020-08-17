@@ -131,11 +131,10 @@ def getPortMatchingService(servicesMapList, matchPortList):
 
 def createOsImage(imageInfoList):
     openSession = DB_INFO.getOpenSession(expire_on_commit=False)
-    defaultImageFormat = 'qcow2'
-    defaultImageContainer = 'bare'
     osImageList = []
     for imageInfo in imageInfoList:
         if 'imagePath' not in imageInfo or 'imageName' not in imageInfo:
+            #FIXME SHOULD THROW ERROR
             defaultLogger.error('ERROR: Need image file path and image name')
             # openSession.rollback()
             openSession.close()
@@ -144,12 +143,14 @@ def createOsImage(imageInfoList):
         osImage = OsImage()
         osImage.file_path = imageInfo['imagePath']
         osImage.image_name = imageInfo['imageName']
-        osImage.image_format = defaultImageFormat
+        osImage.image_format = 'qcow2'
+        osImage.image_container = 'bare'
         if 'imageFormat' in imageInfo:
             osImage.image_format = imageInfo['imageFormat']
-        osImage.image_container = defaultImageContainer
         if 'imageContainer' in imageInfo:
             osImage.image_container = imageInfo['imageContainer']
+        if 'username' in imageInfo:
+            osImage.username = imageInfo['username']
         openSession.add(osImage)
         osImageList.append(osImage)
 

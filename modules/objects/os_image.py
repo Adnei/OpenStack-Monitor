@@ -9,6 +9,7 @@ class OsImage(DB_INFO.BASE):
     image_name = Column(String)
     image_format = Column(String)
     image_container = Column(String)
+    username = Column(String)
     executions = Relationship('Execution')
 
 

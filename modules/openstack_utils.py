@@ -88,7 +88,7 @@ class OpenStackUtils:
         """
         return self.glance.images.delete(imageRef.id)
 
-    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', networkId=None, computeType=False):
+    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', networkId=None, computeType=False, pubKeyPath=None):
         """
             Creates an instance.
             If computeType == True, it returns an instance of openstack compute.
@@ -100,14 +100,22 @@ class OpenStackUtils:
                         flavorName (string): An OpenStack instance flavor
                         networkId (openstack network uuid): the uuid used for the network
                         computeType (boolean): Flag that changes the way how the instance is created (through nova api or compute)
+                        pubKeyPath (string): path to a RSA public key
             Returns:
                         The instance server
         """
+        if pubKeyPath is not None:
+            keypair = self.openstackConn.compute.get_keypair('ctlKeyPair')
+            if keypair is None:
+                self.openstackConn.compute.create_keypair('ctlKeyPair', pubKey)
         if networkId is None:
             networkId = 'none'
         novaFlavor = self.nova.flavors.find(name=flavorName)
 
+
         if computeType:
+            if pubKeyPath is not None:
+                return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}], key_name='ctlKeyPair')
             return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}])
         else:
             return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=[{'net-id': networkId}])

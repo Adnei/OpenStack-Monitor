@@ -26,39 +26,47 @@ def main(argv):
     osList = UTILS.createOsImage([
         # {
         #     'imagePath':'Fedora-Cloud-Base-31-1.9.x86_64.qcow2',
-        #     'imageName':'fedora31'
-        # },
-        # {
-        #     'imagePath':'Fedora-Cloud-Base-32-1.6.x86_64.qcow2',
-        #     'imageName':'fedora32'
+        #     'imageName':'fedora31',
+        #     'username' :'fedora'
         # },
         {
-            'imagePath':'FreeBSD-12.0-RELEASE-amd64.qcow2.xz',
-            'imageName':'freebsd12'
-        }
+            'imagePath':'Fedora-Cloud-Base-32-1.6.x86_64.qcow2',
+            'imageName':'fedora32',
+            'username' :'fedora'
+        },
+        # {
+        #     'imagePath':'FreeBSD-12.0-RELEASE-amd64.qcow2.xz',
+        #     'imageName':'freebsd12'
+        # }
         # {
         #     'imagePath':'focal-server-cloudimg-amd64.img',
-        #     'imageName':'focal_ubuntu'
+        #     'imageName':'focal_ubuntu',
+        #     'username' :'ubuntu'
         # },
         # {
         #     'imagePath':'bionic-server-cloudimg-amd64.img',
-        #     'imageName':'bionic_ubuntu'
+        #     'imageName':'bionic_ubuntu',
+        #     'username' :'ubuntu'
         # },
         # {
         #     'imagePath':'CentOS-7-x86_64-GenericCloud.qcow2',
-        #     'imageName':'centos7_light'
+        #     'imageName':'centos7_light',
+        #     'username' :'centos'
         # },
         # {
         #     'imagePath':'CentOS-7-x86_64-GenericCloud-1707.qcow2',
-        #     'imageName':'centos7'
+        #     'imageName':'centos7',
+        #     'username' :'centos'
         # },
         # {
         #     'imagePath':'debian-10-openstack-amd64.qcow2',
-        #     'imageName':'debian10qcow2'
+        #     'imageName':'debian10qcow2',
+        #     'username' :'debian'
         # },
         # {
         #     'imagePath':'cirros-0.4.0-aarch64-disk.img',
-        #     'imageName':'cirros'
+        #     'imageName':'cirros',
+        #     'username' :'cirros'
         # },
         # {
         #     'imagePath':'debian-10-openstack-amd64.raw',
