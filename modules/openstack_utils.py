@@ -180,6 +180,6 @@ class OpenStackUtils:
 
         with open(os.path.expanduser(privateKeyPath),'w') as privateFile:
             privateFile.write('%s' % keypair.private_key)
-        os.chmod(PRIVATE_KEYPAIR_FILE, 0o400)
+        os.chmod(os.path.expanduser(privateKeyPath), 0o400)
 
         return keypair
