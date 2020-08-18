@@ -105,9 +105,10 @@ class OpenStackUtils:
                         The instance server
         """
         if pubKeyPath is not None:
-            keypair = self.openstackConn.compute.get_keypair('ctlKeyPair')
-            if keypair is None:
-                self.openstackConn.compute.create_keypair('ctlKeyPair', pubKey)
+            keypair = self.openstackConn.compute.find_keypair('ctlKeyPair')
+            if not keypair:
+                with open(os.path.expanduser(pubKeyPath),'r') as publicKey:
+                    self.openstackConn.compute.create_keypair('ctlKeyPair', public_key=publicKey)
         if networkId is None:
             networkId = 'none'
         novaFlavor = self.nova.flavors.find(name=flavorName)
