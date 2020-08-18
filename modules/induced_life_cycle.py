@@ -156,15 +156,17 @@ class InstanceLifeCycleMetering:
             defaultLogger.info('========================================================================\n\n')
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
             if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
+                #TODO: - Separate this code inside a proper method
+                #      - Memory payload should change according to the flavor
                 serverAddr = computeInstanceServer.addresses[self.networkName][0]['addr']
                 sshCli = SSH(serverAddr, self.imageInfo.username, privateKeyPath)
                 #wait so the sshd service is all set and running
-                time.sleep(30)
+                time.sleep(60)
                 sshCli.ssh_connect()
                 defaultLogger.info('ssh to remote host [%s] is done.\nReady to apply RAM payload', serverAddr)
-                sshCli.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,9)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
+                sshCli.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,16)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
                 sshCli.exec_cmd('sudo python fill_mem.py &')
-                defaultLogger.info('Payload successfully applied.\n', serverAddr)
+                defaultLogger.info('Payload successfully applied.\n')
                 sshCli.sshClient.close()
             time.sleep(60)
 
