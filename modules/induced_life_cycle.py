@@ -112,10 +112,7 @@ class InstanceLifeCycleMetering:
         fileList = [iface+'.pcap' for iface in self.ifaceList]
         computeInstanceServer = None
         networkMeter = NetworkMeter(self.ifaceList,outputFileList=fileList)
-        sshCli = SSH()
         privateKeyPath = '~/.ssh/ctlKey'
-        pubKeyPath = '~/.ssh/ctlKey.pub'
-        sshCli.generateKeyPair(privateKeyPath, pubKeyPath)
 
         #
         # INDUCED LIFE CYCLE LOGIC
@@ -136,7 +133,7 @@ class InstanceLifeCycleMetering:
             try:
                 if operationObject['operation'].upper() == 'CREATE':
                     computeInstanceServer = self.openStackUtils.createInstance('computeInstanceServer',
-                                    self.instanceImage, operationObject['params']['flavor'], self.networkId, computeType=True, pubKeyPath=pubKeyPath)
+                                    self.instanceImage, operationObject['params']['flavor'], self.networkId, computeType=True, privateKeyPath=privateKeyPath)
                 else:
                     if computeInstanceServer.status.upper() in operationObject['requiredStatus']:
                         defaultLogger.info('called anonymousFunction!\n')
@@ -160,7 +157,8 @@ class InstanceLifeCycleMetering:
             self.__persistOperationMetering(operation, computeInstanceServer, operationObject, START_TIME_FORMAT, UTC_TIME_FORMAT)
             if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
                 serverAddr = computeInstanceServer.addresses[self.networkName][0]['addr']
-                sshCli.ssh_connect(serverAddr, self.imageInfo.username, privateKeyPath, pubKeyPath)
+                sshCli = SSH(serverAddr, self.imageInfo.username, privateKeyPath)
+                sshCli.ssh_connect()
                 sshCli.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,9)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
                 sshCli.exec_cmd('sudo python fill_mem.py &')
                 sshCli.sshClient.close()

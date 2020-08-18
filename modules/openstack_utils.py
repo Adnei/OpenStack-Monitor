@@ -1,6 +1,8 @@
 import time
 # import logging
 from os import environ as env
+import os
+import errno
 from novaclient import client as novaClient
 from keystoneauth1.identity import v3
 from keystoneauth1 import session as keystoneSession
@@ -88,7 +90,7 @@ class OpenStackUtils:
         """
         return self.glance.images.delete(imageRef.id)
 
-    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', networkId=None, computeType=False, pubKeyPath=None):
+    def createInstance(self, instanceName, glanceImage, flavorName='m1.small', networkId=None, computeType=False, privateKeyPath=None):
         """
             Creates an instance.
             If computeType == True, it returns an instance of openstack compute.
@@ -100,15 +102,14 @@ class OpenStackUtils:
                         flavorName (string): An OpenStack instance flavor
                         networkId (openstack network uuid): the uuid used for the network
                         computeType (boolean): Flag that changes the way how the instance is created (through nova api or compute)
-                        pubKeyPath (string): path to a RSA public key
+                        privateKeyPath (string): path to a RSA private key
             Returns:
                         The instance server
         """
         if pubKeyPath is not None:
             keypair = self.openstackConn.compute.find_keypair('ctlKeyPair')
             if not keypair:
-                with open(os.path.expanduser(pubKeyPath),'r') as publicKey:
-                    self.openstackConn.compute.create_keypair('ctlKeyPair', public_key=publicKey)
+                keypair = self.createKeypair('ctlKeyPair', privateKeyPath)
         if networkId is None:
             networkId = 'none'
         novaFlavor = self.nova.flavors.find(name=flavorName)
@@ -116,7 +117,7 @@ class OpenStackUtils:
 
         if computeType:
             if pubKeyPath is not None:
-                return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}], key_name='ctlKeyPair')
+                return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}], key_name=keypair.name)
             return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}])
         else:
             return self.nova.servers.create(instanceName, glanceImage, novaFlavor, nics=[{'net-id': networkId}])
@@ -165,3 +166,20 @@ class OpenStackUtils:
             }
             self.neutron.create_subnet(subnetRequest)
         return networkId
+
+    def createKeypair(self, name, privateKeyPath):
+        keypair = self.openstackConn.compute.create_keypair(name='ctlKeyPair')
+
+        try:
+            (sshDir, privateFileName) = os.path.split(os.path.expanduser(privateKeyPath))
+            if not os.path.exists(sshDir):
+                os.makedirs(sshDir)
+        except OSError as e:
+             if e.errno != errno.EEXIST:
+                raise e
+
+        with open(os.path.expanduser(privateKeyPath),'w') as privateFile:
+            privateFile.write('%s' % keypair.private_key)
+        os.chmod(PRIVATE_KEYPAIR_FILE, 0o400)
+
+        return keypair
