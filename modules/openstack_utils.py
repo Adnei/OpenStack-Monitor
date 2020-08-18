@@ -106,7 +106,7 @@ class OpenStackUtils:
             Returns:
                         The instance server
         """
-        if pubKeyPath is not None:
+        if privateKeyPath is not None:
             keypair = self.openstackConn.compute.find_keypair('ctlKeyPair')
             if not keypair:
                 keypair = self.createKeypair('ctlKeyPair', privateKeyPath)
@@ -116,7 +116,7 @@ class OpenStackUtils:
 
 
         if computeType:
-            if pubKeyPath is not None:
+            if keypair:
                 return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}], key_name=keypair.name)
             return self.openstackConn.compute.create_server(name=instanceName, image_id=glanceImage.id, flavor_id=novaFlavor.id, networks=[{'uuid': networkId}])
         else:
