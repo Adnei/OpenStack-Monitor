@@ -158,6 +158,8 @@ class InstanceLifeCycleMetering:
             if(operationObject['operation'].upper() == 'CREATE' and computeInstanceServer.status.upper() == 'ACTIVE'):
                 serverAddr = computeInstanceServer.addresses[self.networkName][0]['addr']
                 sshCli = SSH(serverAddr, self.imageInfo.username, privateKeyPath)
+                #wait so the sshd service is all set and running
+                time.sleep(30)
                 sshCli.ssh_connect()
                 sshCli.exec_cmd('printf "import time\nfill_mem = [bytearray(1024000000) for aux in range(1,9)]\nwhile True: time.sleep(0.025)" >> fill_mem.py')
                 sshCli.exec_cmd('sudo python fill_mem.py &')

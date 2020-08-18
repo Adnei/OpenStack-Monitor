@@ -9,11 +9,9 @@ class SSH:
         self.hostname = hostname
         self.username = username
         self.sshClient = SSHClient()
-        # self.sshClient.load_system_host_keys()
+        self.sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     def ssh_connect(self):
-
-        self.sshClient.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.sshClient.connect(hostname=self.hostname, username=self.username, key_filename=self.privateKeyPath)
 
     def exec_cmd(self, cmd):
